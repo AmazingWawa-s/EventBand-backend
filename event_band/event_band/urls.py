@@ -10,7 +10,7 @@ urlpatterns = [
     path("register/", uv.register),
     path("changepwd/",uv.change_pwd),
     path("user/update/",uv.update),
-    path("user/remove/",uv.remove)
+    path("logoff/",uv.remove)
 ]
 
 

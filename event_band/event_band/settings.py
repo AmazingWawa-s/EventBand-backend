@@ -22,19 +22,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-$xbspd$ys##^ki@yt*%vod=0$)s6@b91z60l4j87#%z#va%$jl"
+EXPIRE_TIME = 30000
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = [
     "192.168.43.66",
-    "192.168.43.246"
+    "192.168.43.246",
+    "http://192.168.43.132:5173"
 ]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    "corsheaders",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -47,6 +50,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     #"django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -140,6 +144,34 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # 添加Cors配置
 # 设置白名单（能远程访问后端的白名单）
-CORS_ORIGIN_WHITELIST = ("http://192.168.100.100:8080",)
+#CORS_ORIGIN_WHITELIST = ("http://192.168.43.132:5173",)
 # Cors Cookie
 CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
+#CORS_ORIGIN_WHITELIST = ['*']
+CORS_ALLOW_METHODS = (
+	'DELETE',
+	'GET',
+	'OPTIONS',
+	'PATCH',
+	'POST',
+	'PUT',
+	'VIEW',
+)
+
+CORS_ALLOW_HEADERS = (
+    
+    'authorization',
+	'content-type',
+    # 常用就上面两个
+	'XMLHttpRequest',
+	'X_FILENAME',
+	'accept-encoding',
+	'dnt',
+	'origin',
+	'user-agent',
+	'x-csrftoken',
+	'x-requested-with',
+	'Pragma',
+)
+
