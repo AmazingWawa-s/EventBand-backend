@@ -1,4 +1,5 @@
 import hashlib
+import jwt
 
 def encoder(raw):
     md5 = hashlib.md5()
