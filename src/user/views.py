@@ -68,7 +68,7 @@ def remove(request):
 
     try:
         data = json.loads(request.body.decode("utf-8"))
-        cd,potential_id=validtoken(data["userToken"])
+        cd,potential_id=utils.validtoken(data["userToken"])
         if cd==1:
             cursor.execute("delete from user where user_id=%s",potential_id)
             connection.commit()
@@ -89,7 +89,7 @@ def change_pwd(request):
 
     try:
         data = json.loads(request.body.decode("utf-8"))
-        cd,potential_id=validtoken(data["userToken"])   
+        cd,potential_id=utils.validtoken(data["userToken"])   
         if cd==1:
             cursor.execute("select user_password from user where user_id = %s",potential_id)
             new_password = utils.encoder(data["userNewPassword"])
@@ -132,20 +132,7 @@ def update(request):
         return JsonResponse({"code":0,"msg":"updateError"+str(e)})
     finally:
         cursor.close()
-def validtoken(tok):
-    cursor = connection.cursor()
-    try:   
-        decode_token=jwt.decode(tok,SECRET_KEY,algorithms="HS256")
-        exp_time=int(decode_token["my_exp"])
-        if time.time() >exp_time:
-            return 2,"token out of date"
-        else :
-            return 1,decode_token["userId"]
-    except Exception as e:
-        connection.rollback()
-        return 0,"validTokenError:"+str(e)
-    finally:
-        cursor.close()
+
 
 
 
