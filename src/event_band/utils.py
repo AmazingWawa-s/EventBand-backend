@@ -41,8 +41,20 @@ def count_event():
     except Exception as e:
         return JsonResponse({"code":0,"msg":"countEventError:"+str(e)})
 def return_event_id():
+<<<<<<< HEAD
     return current_event_id
 
+=======
+    try:
+        return current_event_id
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":""+str(e)})
+def add_event_id(num):
+    try:
+        current_event_id=current_event_id+num
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":""+str(e)})
+>>>>>>> 334e0edbf34178841f871a1aa09d5d2824f6b3ec
         
 def template1(request):
 
