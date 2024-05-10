@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from user import views as uv
+from event import views as ev
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -10,7 +11,9 @@ urlpatterns = [
     path("register/", uv.register),
     path("changepwd/",uv.change_pwd),
     path("user/update/",uv.update),
-    path("logoff/",uv.remove)
+    path("logoff/",uv.remove),
+    path("createevent/private/",ev.create_private_event),
+    path("userpage/",ev.load_user_page)
 ]
 
 

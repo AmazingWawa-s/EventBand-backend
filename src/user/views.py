@@ -3,8 +3,7 @@ import json
 from django.db import connection
 from django.http import JsonResponse
 import event_band.utils as utils
-import jwt
-from event_band.settings import EXPIRE_TIME,SECRET_KEY
+from event_band.settings import EXPIRE_TIME
 import time
 
 
@@ -50,8 +49,7 @@ def login(request):
                 "userId":result[0][1],
                 "my_exp":int(time.time())+EXPIRE_TIME
             }
-            Token=jwt.encode(payload,SECRET_KEY,algorithm="HS256")
-            #cursor.execute("insert into token (token_token) values(%s) ",Token) 
+            Token=utils.generatetoken(payload)
             return JsonResponse({"code":1,"userNameExist":True,"userPasswordOk":True,"userToken":Token})
         else:
             # 密码错误

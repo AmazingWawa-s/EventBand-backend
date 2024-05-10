@@ -1,5 +1,8 @@
 import hashlib
 import jwt
+from event_band.settings import SECRET_KEY
+import time
+from django.db import connection
 
 def encoder(raw):
     md5 = hashlib.md5()
@@ -16,6 +19,12 @@ def validtoken(tok):
     except Exception as e:
         connection.rollback()
         return 0,"validTokenError:"+str(e)
+def generatetoken(payload):
+    try:
+        token=jwt.encode(payload,SECRET_KEY,algorithms="HS256")
+        return token
+    except Exception as e:
+        pass
 def template1(request):
 
     try:
