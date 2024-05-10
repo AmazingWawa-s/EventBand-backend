@@ -13,8 +13,10 @@ def register(request):
     cursor = connection.cursor()
 
     try:
+        
         tempUser = User(request)
-        cursor.execute("select user_name from user where user_name=%s",tempUser.get("name"))
+        
+        cursor.execute("select user_name from user where user_name=%s",tempUser.get(["name"]))
         if len(cursor.fetchall())>0:
             # 用户名已存在
             return JsonResponse({"code":1,"userNameExist":True})
@@ -34,15 +36,21 @@ def login(request):
     cursor = connection.cursor()
 
     try:
+        
+        
         tempUser = User(request)
-        cursor.execute("select user_password,user_id from user where user_name = %s",tempUser.get("name"))        
+        
+        cursor.execute("select user_password,user_id from user where user_name = %s",tempUser.get(["name"]))
+            
         result = cursor.fetchall()
+        
         if len(result)==0:
             # 用户名不存在
             return JsonResponse({"code":1,"userNameExist":False})   
         
         dbUser = User()
         dbUser.set(["id","password"],[result[0][1],result[0][0]])
+        
         if tempUser.get("password") == dbUser.get("password"):
             # 密码正确
             payload={
@@ -62,8 +70,8 @@ def login(request):
 
 def remove(request):
     cursor = connection.cursor()
-
     try:
+        data = json.loads(request.body.decode("utf-8"))
         cd,potential_id=utils.validtoken(data["userToken"])
         if cd==1:
             cursor.execute("delete from user where user_id=%s",potential_id)
@@ -73,6 +81,7 @@ def remove(request):
             return JsonResponse({"code":1,"msg":potential_id})
         elif cd==0:
             return JsonResponse({"code":0,"msg":potential_id})
+        
     except Exception as e:
         connection.rollback()
         return JsonResponse({"code":0,"msg":"removeError:"+str(e)})   
@@ -85,6 +94,7 @@ def change_pwd(request):
 
     try:
         data = json.loads(request.body.decode("utf-8"))
+        
         cd,potential_id=utils.validtoken(data["userToken"])   
         if cd==1:
             cursor.execute("select user_password from user where user_id = %s",potential_id)

@@ -28,6 +28,9 @@ EXPIRE_TIME = 30000
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    '127.0.0.1',
+    "192.168.2.1",
+    "192.168.78.220",
     "192.168.43.66",
     "192.168.43.246",
     "http://192.168.43.132:5173"
@@ -52,6 +55,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "event_band.middle.AuthorizeMiddleware",
     #"django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -92,7 +96,7 @@ DATABASES = {
         "NAME": "eventband",
         "USER": 'sa',
         "PASSWORD": '',
-        "HOST":'192.168.43.246',
+        "HOST":'192.168.78.246',
         "PORT": '3306'
     }
 }

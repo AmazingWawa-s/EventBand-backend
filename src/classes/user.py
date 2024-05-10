@@ -1,25 +1,28 @@
 import json
-from event_band import connection
 import event_band.utils as utils
+
 class User():
-    def __init__(self):
-        pass
-    def __init__(self,name,password,id=-1):
-        self.id = id
-        self.name=name
-        self.password=password
    
-    def __init__(self,request):
-        data = json.loads(request.body.decode("utf-8"))
-        self.id=-1
-        self.name=data["userName"]
-        self.password=utils.encoder(data["userPassword"])
-        self.cursor=connection.cursor()
-    def __init__(self,token):
-        cd,potential_id=utils.validtoken(data["userToken"])
+    def __init__(self,name=None,password=None,id=None):
+        if isinstance(name,str):
+            self.id = id
+            self.name=name
+            self.password=password
+        elif password==None and id ==None and name!=None:
+            data = json.loads(name.body.decode("utf-8"))
+            self.id=-1
+            self.name=data["userName"]
+            self.password=utils.encoder(data["userPassword"])
+            
+        
+    
+   
+        
+    
+    
 
     def __del__(self):
-        self.cursor.close()
+        pass
     
     def get(self,attrs):
         ls=[]
@@ -47,5 +50,3 @@ class NormalUser(User):
     def __init__(self,id,name,password):
         super().__init__(id,name,password)
         self.auth = 1
-
-a=User(1,"me",123)

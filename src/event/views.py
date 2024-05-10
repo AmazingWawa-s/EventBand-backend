@@ -5,7 +5,9 @@ import json
 from django.http import JsonResponse
 import event_band.utils as utils
 import pymysql
-from event_band import connection
+
+from django.db import connection
+from event_band import conn
 
 
 

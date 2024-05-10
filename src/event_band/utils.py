@@ -1,5 +1,6 @@
 import hashlib
 import jwt
+import json
 from event_band.settings import SECRET_KEY
 import time
 from django.db import connection
@@ -26,7 +27,7 @@ def generatetoken(payload):
         token=jwt.encode(payload,SECRET_KEY,algorithm="HS256")
         return token
     except Exception as e:
-        return str(e)
+        return "generateTokenError:"+str(e)
     
     
 def count_event():
@@ -48,20 +49,20 @@ def add_event_id(num):
     global current_event_id
     current_event_id=current_event_id+num
         
-def template1(request):
-
-    try:
-        data = json.loads(request.body.decode("utf-8"))
-        cd,potential_id=utils.validtoken(data["userToken"])   
-        if cd==1:
-            pass
-        elif cd==2:
-            return JsonResponse({"code":1,"msg":potential_id})
-        elif cd==0:
-            return JsonResponse({"code":0,"msg":potential_id})
-    except Exception as e:
-        connection.rollback()
-        return JsonResponse({"code":0,"msg":""+str(e)})
+    # def template1(request):
+        
+    #     try:
+    #         data = json.loads(request.body.decode("utf-8"))
+    #         cd,potential_id=utils.validtoken(data["userToken"])   
+    #         if cd==1:
+    #             pass
+    #         elif cd==2:
+    #             return JsonResponse({"code":1,"msg":potential_id})
+    #         elif cd==0:
+    #             return JsonResponse({"code":0,"msg":potential_id})
+    #     except Exception as e:
+    #         connection.rollback()
+    #         return JsonResponse({"code":0,"msg":""+str(e)})
 
 def createUser(result):
     ls=[]
@@ -70,3 +71,10 @@ def createUser(result):
         ls.append(tempUser)
 
     return ls
+def is_json(r):
+    try:
+        json.loads(r)
+        return True
+    except Exception as e:
+        return False
+    
