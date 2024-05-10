@@ -3,43 +3,27 @@ import event_band.utils as utils
 
 class User():
    
-    def __init__(self,name=None,password=None,id=None):
-        if isinstance(name,str):
-            self.id = id
-            self.name=name
-            self.password=password
-        elif password==None and id ==None and name!=None:
-            data = json.loads(name.body.decode("utf-8"))
+    def __init__(self,request=None):
+        if request is not None:
+            data = json.loads(request.body.decode("utf-8"))
             self.id=-1
             self.name=data["userName"]
             self.password=utils.encoder(data["userPassword"])
-        elif name is None and password is None and id is None:
+        else:
             self.id=-1
-            
-            
-        
-    
-   
-        
-    
-    
+            self.name=""
+            self.password=""
 
     def __del__(self):
         pass
     
-    def get(self,attrs):
-        ls=[]
-        for attr in attrs:
-            if attr=="id":  ls.append(self.id)
-            elif attr=="name": ls.append(self.name)
-            elif attr=="password": ls.append(self.password)
-        return ls
+    def get(self,attr_list):
+        return [getattr(self,attr) for attr in attr_list]
 
-    def set(self,attrs,data):
-        for i in range(len(attrs)):
-            if attrs[i]=="id":  self.id=data[i]
-            elif attrs[i]=="name": self.name=data[i]
-            elif attrs[i]=="password": self.password=data[i]
+    def set(self,attr_dict):
+        for attr,value in attr_dict.items():
+            setattr(self,attr,value)
+
    
 
 

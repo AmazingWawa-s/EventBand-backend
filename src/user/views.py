@@ -36,20 +36,16 @@ def login(request):
     cursor = connection.cursor()
 
     try:
-        
-        
         tempUser = User(request)
         
         cursor.execute("select user_password,user_id from user where user_name = %s",tempUser.get(["name"]))
-            
         result = cursor.fetchall()
-        
         if len(result)==0:
             # 用户名不存在
             return JsonResponse({"code":1,"userNameExist":False})   
         
         dbUser = User()
-        dbUser.set(["id","password"],[result[0][1],result[0][0]])
+        dbUser.set({"id":result[0][1], "password":result[0][0]})
         
         if tempUser.get(["password"]) == dbUser.get(["password"]):
             # 密码正确
@@ -97,7 +93,6 @@ def change_pwd(request):
         # 新密码和原密码相同
             return JsonResponse({"code":1,"duplicatePassword":True})
             
-       
         sql_data = [new_password,id]
         cursor.execute("update user set user_password=%s where user_id=%s",sql_data)
         connection.commit()
