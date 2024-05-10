@@ -14,6 +14,7 @@ class YourAppConfig(AppConfig):
  
     def ready(self):
         count_event()
+        
         # 在这里调用你想要在启动时运行的函数
         
  

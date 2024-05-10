@@ -1,10 +1,11 @@
 
 from django.shortcuts import render
 import json
-from django.db import connection
+#from django.db import connection
 from django.http import JsonResponse
 import event_band.utils as utils
 import pymysql
+from event_band import connection
 
 
 
@@ -39,7 +40,7 @@ def create_private_event(request):
     finally:
         cursor.close()
 def load_user_page(request):
-    conn=pymysql.connect(host="192.168.43.246",user="sa",password="",db="eventband",port=3306,charset="utf8")
+    #conn=pymysql.connect(host="192.168.43.246",user="sa",password="",db="eventband",port=3306,charset="utf8")
     cursor=conn.cursor(cursor=pymysql.cursors.DictCursor)
 
     try:
@@ -48,10 +49,6 @@ def load_user_page(request):
         if cd==1:
             cursor.execute("select er.eurelation_event_id as event_id,er.eurelation_role as role,eb.event_start as event_start,eb.event_end as event_end,eb.event_name as event_name,eb.event_location as event_location,eb.event_description as event_description,eb.event_type as event_type from  (select eurelation_event_id,eurelation_role from eurelation where eurelation_user_id=%s) er  left join event_brief eb on er.eurelation_event_id=eb.event_id",potential_id)
             result=cursor.fetchall()
-            # result_dict={}
-            # for i in result:
-
-            #     result_dict.append()
             return JsonResponse({"code":1,"queryResult":result})
             
         elif cd==2:

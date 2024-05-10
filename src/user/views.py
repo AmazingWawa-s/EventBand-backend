@@ -5,22 +5,21 @@ from django.http import JsonResponse
 import event_band.utils as utils
 from event_band.settings import EXPIRE_TIME
 import time
+from classes.user import User
 
 
 def register(request):
+
     cursor = connection.cursor()
 
     try:
-        data = json.loads(request.body.decode("utf-8"))
-        cursor.execute("select user_name from user where user_name=%s",data["userName"])
+        tempUser = User(request)
+        cursor.execute("select user_name from user where user_name=%s",tempUser.get("name"))
         if len(cursor.fetchall())>0:
             # 用户名已存在
             return JsonResponse({"code":1,"userNameExist":True})
-        sql_data = [
-            data["userName"],
-            utils.encoder(data["userPassword"])
-        ]
-        cursor.execute("insert into user (user_name,user_password) values (%s,%s)",sql_data)
+
+        cursor.execute("insert into user (user_name,user_password) values (%s,%s)",tempUser.get(["name","password"]))
         connection.commit()
         # 注册成功
         return JsonResponse({"code":1,"userNameExist":False,"register_ok":True})
@@ -35,18 +34,19 @@ def login(request):
     cursor = connection.cursor()
 
     try:
-        data = json.loads(request.body.decode("utf-8"))
-        cursor.execute("select user_password,user_id from user where user_name = %s",data["userName"])        
+        tempUser = User(request)
+        cursor.execute("select user_password,user_id from user where user_name = %s",tempUser.get("name"))        
         result = cursor.fetchall()
         if len(result)==0:
             # 用户名不存在
-            return JsonResponse({"code":1,"userNameExist":False})      
-        password_db = result[0][0]
-        encoded_password = utils.encoder(data["userPassword"])
-        if password_db == encoded_password:
+            return JsonResponse({"code":1,"userNameExist":False})   
+        
+        dbUser = User()
+        dbUser.set(["id","password"],[result[0][1],result[0][0]])
+        if tempUser.get("password") == dbUser.get("password"):
             # 密码正确
             payload={
-                "userId":result[0][1],
+                "userId":dbUser.get("id"),
                 "my_exp":int(time.time())+EXPIRE_TIME
             }
             Token=utils.generatetoken(payload)
@@ -63,9 +63,7 @@ def login(request):
 def remove(request):
     cursor = connection.cursor()
 
-
     try:
-        data = json.loads(request.body.decode("utf-8"))
         cd,potential_id=utils.validtoken(data["userToken"])
         if cd==1:
             cursor.execute("delete from user where user_id=%s",potential_id)

@@ -4,6 +4,7 @@ from event_band.settings import SECRET_KEY
 import time
 from django.db import connection
 from django.http import JsonResponse
+from classes.user import User
 current_event_id=0
 
 def encoder(raw):
@@ -62,3 +63,10 @@ def template1(request):
         connection.rollback()
         return JsonResponse({"code":0,"msg":""+str(e)})
 
+def createUser(result):
+    ls=[]
+    for i in result:
+        tempUser = User(result[i][0],result[i][1])
+        ls.append(tempUser)
+
+    return ls
