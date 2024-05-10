@@ -51,10 +51,10 @@ def login(request):
         dbUser = User()
         dbUser.set(["id","password"],[result[0][1],result[0][0]])
         
-        if tempUser.get("password") == dbUser.get("password"):
+        if tempUser.get(["password"]) == dbUser.get(["password"]):
             # 密码正确
             payload={
-                "userId":dbUser.get("id"),
+                "userId":dbUser.get(["id"]),
                 "my_exp":int(time.time())+EXPIRE_TIME
             }
             Token=utils.generatetoken(payload)
@@ -71,16 +71,11 @@ def login(request):
 def remove(request):
     cursor = connection.cursor()
     try:
-        data = json.loads(request.body.decode("utf-8"))
-        cd,potential_id=utils.validtoken(data["userToken"])
-        if cd==1:
-            cursor.execute("delete from user where user_id=%s",potential_id)
-            connection.commit()
-            return JsonResponse({"code":1,"removeOk":True})
-        elif cd==2:
-            return JsonResponse({"code":1,"msg":potential_id})
-        elif cd==0:
-            return JsonResponse({"code":0,"msg":potential_id})
+        id = request.userid
+        cursor.execute("delete from user where user_id=%s",id)
+        connection.commit()
+        return JsonResponse({"code":1,"removeOk":True})
+
         
     except Exception as e:
         connection.rollback()
@@ -94,26 +89,20 @@ def change_pwd(request):
 
     try:
         data = json.loads(request.body.decode("utf-8"))
-        
-        cd,potential_id=utils.validtoken(data["userToken"])   
-        if cd==1:
-            cursor.execute("select user_password from user where user_id = %s",potential_id)
-            new_password = utils.encoder(data["userNewPassword"])
-            old_password=   cursor.fetchall()[0][0]
-            if new_password == old_password:
-            # 新密码和原密码相同
-                return JsonResponse({"code":1,"duplicatePassword":True})
+        id = request.userid
+        cursor.execute("select user_password from user where user_id = %s",id)
+        new_password = utils.encoder(data["userNewPassword"])
+        old_password=   cursor.fetchall()[0][0]
+        if new_password == old_password:
+        # 新密码和原密码相同
+            return JsonResponse({"code":1,"duplicatePassword":True})
             
        
-            sql_data = [new_password,potential_id]
-            cursor.execute("update user set user_password=%s where user_id=%s",sql_data)
-            connection.commit()
+        sql_data = [new_password,id]
+        cursor.execute("update user set user_password=%s where user_id=%s",sql_data)
+        connection.commit()
         # 新密码有效
-            return JsonResponse({"code":1,"duplicatePassword":False,"updatePassword":True})
-        elif cd==2:
-            return JsonResponse({"code":1,"msg":potential_id})
-        elif cd==0:
-            return JsonResponse({"code":0,"msg":potential_id})
+        return JsonResponse({"code":1,"duplicatePassword":False,"updatePassword":True})
     except Exception as e:
         connection.rollback()
         return JsonResponse({"code":0,"msg":"changePwdError:"+str(e)})

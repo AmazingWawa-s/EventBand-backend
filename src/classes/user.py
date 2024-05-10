@@ -13,6 +13,9 @@ class User():
             self.id=-1
             self.name=data["userName"]
             self.password=utils.encoder(data["userPassword"])
+        elif name is None and password is None and id is None:
+            self.id=-1
+            
             
         
     
