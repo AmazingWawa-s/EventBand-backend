@@ -14,7 +14,7 @@ def create_private_event(request):
         data = json.loads(request.body.decode("utf-8"))
         cd,potential_id=utils.validtoken(data["userToken"])   
         if cd==1:
-            event_id_now=current_event_id
+            event_id_now=utils.re
             current_event_id=current_event_id+1
             #更新活动简略表
             sql_data = [event_id_now,data["eventStart"],data["eventEnd"],data["eventName"]]
@@ -44,7 +44,7 @@ def load_user_page(request):
         data = json.loads(request.body.decode("utf-8"))
         cd,potential_id=utils.validtoken(data["userToken"])   
         if cd==1:
-            cursor.execute("select from  (select event_id,role from eurelation where user_id=%s) er  left join event_brief eb on er.event_id=eb.event_id")
+            cursor.execute("select * from  (select event_id,role from eurelation where user_id=%s) er  left join event_brief eb on er.event_id=eb.event_id")
             result=cursor.fetchall()
             return JsonResponse({"code":1,"queryResult":result})
             
@@ -53,13 +53,6 @@ def load_user_page(request):
         elif cd==0:
             return JsonResponse({"code":0,"msg":potential_id})
     except Exception as e:
-        connection.rollback()
         return JsonResponse({"code":0,"msg":""+str(e)})
     finally:
         cursor.close()
-
-            
-        
-    except Exception as e:
-        connection.rollback()
-        return JsonResponse({"code":0,"msg":""+str(e)})
