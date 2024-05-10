@@ -45,7 +45,11 @@ def return_event_id():
     try:
         return current_event_id
     except Exception as e:
-        connection.rollback()
+        return JsonResponse({"code":0,"msg":""+str(e)})
+def add_event_id(num):
+    try:
+        current_event_id=current_event_id+num
+    except Exception as e:
         return JsonResponse({"code":0,"msg":""+str(e)})
         
 def template1(request):

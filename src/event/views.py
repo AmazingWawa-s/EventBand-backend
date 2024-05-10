@@ -14,8 +14,8 @@ def create_private_event(request):
         data = json.loads(request.body.decode("utf-8"))
         cd,potential_id=utils.validtoken(data["userToken"])   
         if cd==1:
-            event_id_now=current_event_id
-            current_event_id=current_event_id+1
+            event_id_now=utils.return_event_id()
+            utils.add_event_id(1)
             #更新活动简略表
             sql_data = [event_id_now,data["eventStart"],data["eventEnd"],data["eventName"]]
             cursor.execute("insert into event_brief (event_id,event_start,event_end,event_name) values (%s,%s,%s,%s)",sql_data)
