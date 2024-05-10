@@ -5,7 +5,6 @@ from django.db import connection
 from django.http import JsonResponse
 import event_band.utils as utils
 
-current_event_id=0
 
 
 
@@ -58,16 +57,7 @@ def load_user_page(request):
         return JsonResponse({"code":0,"msg":""+str(e)})
     finally:
         cursor.close()
-def count_event():
-    cursor=connection.cursor()
-    try:
-        cursor.execute("select event_id from event order by event_id desc limit 1")
-        result=cursor.fetchall()
-        if len(result)>0:
-            current_event_id=result[0][0]+1
-            
-        else: 
-            current_event_id=1
+
             
         
     except Exception as e:

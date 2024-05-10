@@ -3,6 +3,8 @@ import jwt
 from event_band.settings import SECRET_KEY
 import time
 from django.db import connection
+from django.http import JsonResponse
+current_event_id=0
 
 def encoder(raw):
     md5 = hashlib.md5()
@@ -25,6 +27,27 @@ def generatetoken(payload):
         return token
     except Exception as e:
         pass
+    
+    
+def count_event():
+    cursor=connection.cursor()
+    try:
+        cursor.execute("select event_id from event order by event_id desc limit 1")
+        result=cursor.fetchall()
+        if len(result)>0:
+            current_event_id=result[0][0]+1
+            
+        else: 
+            current_event_id=1
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":""+str(e)})
+def return_event_id():
+    try:
+        return current_event_id
+    except Exception as e:
+        connection.rollback()
+        return JsonResponse({"code":0,"msg":""+str(e)})
+        
 def template1(request):
 
     try:
