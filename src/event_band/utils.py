@@ -12,7 +12,7 @@ def encoder(raw):
     return md5.hexdigest()
 def validtoken(tok):
     try:   
-        decode_token=jwt.decode(tok,SECRET_KEY,algorithm="HS256")
+        decode_token=jwt.decode(tok,SECRET_KEY,algorithms="HS256")
         exp_time=int(decode_token["my_exp"])
         if time.time() >exp_time:
             return 2,"token out of date"
@@ -43,6 +43,9 @@ def count_event():
 def return_event_id():
     return current_event_id
 
+def add_event_id(num):
+    global current_event_id
+    current_event_id=current_event_id+num
         
 def template1(request):
 
