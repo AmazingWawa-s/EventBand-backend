@@ -12,7 +12,7 @@ def encoder(raw):
     return md5.hexdigest()
 def validtoken(tok):
     try:   
-        decode_token=jwt.decode(tok,SECRET_KEY,algorithms="HS256")
+        decode_token=jwt.decode(tok,SECRET_KEY,algorithm="HS256")
         exp_time=int(decode_token["my_exp"])
         if time.time() >exp_time:
             return 2,"token out of date"
@@ -23,7 +23,7 @@ def validtoken(tok):
         return 0,"validTokenError:"+str(e)
 def generatetoken(payload):
     try:
-        token=jwt.encode(payload,SECRET_KEY,algorithms="HS256")
+        token=jwt.encode(payload,SECRET_KEY,algorithm="HS256")
         return token
     except Exception as e:
         pass
