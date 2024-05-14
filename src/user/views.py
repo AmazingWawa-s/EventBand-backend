@@ -5,7 +5,7 @@ from django.http import JsonResponse
 import event_band.utils as utils
 from event_band.settings import EXPIRE_TIME
 import time
-from classes.user import User
+from entity.user import User
 
 
 def register(request):
@@ -44,8 +44,7 @@ def login(request):
             # 用户名不存在
             return JsonResponse({"code":1,"userNameExist":False})   
         
-        dbUser = User()
-        dbUser.set({"id":result[0][1], "password":result[0][0]})
+        dbUser = User({"id":result[0][1], "password":result[0][0]})
         
         if tempUser.get(["password"]) == dbUser.get(["password"]):
             # 密码正确
