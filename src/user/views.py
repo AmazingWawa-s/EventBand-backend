@@ -7,101 +7,84 @@ from event_band.settings import EXPIRE_TIME
 import time
 from entity.user import User
 
-
+#注册
 def register(request):
-
-    cursor = connection.cursor()
-
     try:
+        data = json.loads(request.body.decode("utf-8"))
+        tUser = User(data["userName"])
         
-        tempUser = User(request)
-        
-        cursor.execute("select user_name from user where user_name=%s",tempUser.get(["name"]))
-        if len(cursor.fetchall())>0:
-            # 用户名已存在
+        # 用户名已存在
+        if tUser.get(["id"])>=0:
             return JsonResponse({"code":1,"userNameExist":True})
-
-        cursor.execute("insert into user (user_name,user_password) values (%s,%s)",tempUser.get(["name","password"]))
-        connection.commit()
-        # 注册成功
+        
+        # 用户名不存在时创建新的用户
+        encode_password=utils.encoder(data["userPassword"])
+        tUser.set({"user_password":encode_password})
         return JsonResponse({"code":1,"userNameExist":False,"register_ok":True})
     except Exception as e:
-        connection.rollback()
         return JsonResponse({"code":0,"msg":"registerError:"+str(e)})
-    finally:
-        cursor.close()
 
-
+#登录
 def login(request):
-    cursor = connection.cursor()
-
     try:
-        tempUser = User(request)
+        data = json.loads(request.body.decode("utf-8"))
+        tUser = User(data["userName"])
         
-        cursor.execute("select user_password,user_id from user where user_name = %s",tempUser.get(["name"]))
-        result = cursor.fetchall()
-        if len(result)==0:
-            # 用户名不存在
-            return JsonResponse({"code":1,"userNameExist":False})   
+        # 输入的用户名不存在时返回错误
+        if tUser.get(["id"])==-1:
+            return JsonResponse({"code":1,"userNameExist":False})
         
-        dbUser = User({"id":result[0][1], "password":result[0][0]})
+        # 用户名存在
+        encode_password=utils.encoder(data["userPassword"])
         
-        if tempUser.get(["password"]) == dbUser.get(["password"]):
-            # 密码正确
+        # 密码正确
+        if tUser.get(["password"]) == encode_password:
             payload={
-                "userId":dbUser.get(["id"]),
+                "userId":tUser.get(["id"]),
                 "my_exp":int(time.time())+EXPIRE_TIME
             }
             Token=utils.generatetoken(payload)
             return JsonResponse({"code":1,"userNameExist":True,"userPasswordOk":True,"userToken":Token})
+        # 密码错误
         else:
-            # 密码错误
             return JsonResponse({"code":1,"userNameExist":True,"userPasswordOk":False})     
     except Exception as e:
         return JsonResponse({"code":0,"msg":"loginError:"+str(e)})
-    finally:
-        cursor.close()
  
-
+#注销用户
 def remove(request):
-    cursor = connection.cursor()
     try:
         id = request.userid
-        cursor.execute("delete from user where user_id=%s",id)
-        connection.commit()
-        return JsonResponse({"code":1,"removeOk":True})
-
-        
+        tUser=User(id)
+        tUser.deleteUser()
+        return JsonResponse({"code":1,"removeOk":True})    
     except Exception as e:
-        connection.rollback()
         return JsonResponse({"code":0,"msg":"removeError:"+str(e)})   
-    finally:
-        cursor.close()
     
-
+    
+#改变密码
 def change_pwd(request):
     cursor = connection.cursor()
 
     try:
         data = json.loads(request.body.decode("utf-8"))
-        id = request.userid
-        cursor.execute("select user_password from user where user_id = %s",id)
         new_password = utils.encoder(data["userNewPassword"])
-        old_password=   cursor.fetchall()[0][0]
-        if new_password == old_password:
+        
+        id = request.userid
+        tUser=User(id)
+        #cursor.execute("select user_password from user where user_id = %s",id)
+        if new_password == tUser.get(["password"]):
         # 新密码和原密码相同
             return JsonResponse({"code":1,"duplicatePassword":True})
-            
-        sql_data = [new_password,id]
-        cursor.execute("update user set user_password=%s where user_id=%s",sql_data)
-        connection.commit()
+        else :
+            tUser.set({"user_password":new_password})
+        #sql_data = [new_password,id]
+        #cursor.execute("update user set user_password=%s where user_id=%s",sql_data)
+        #connection.commit()
         # 新密码有效
         return JsonResponse({"code":1,"duplicatePassword":False,"updatePassword":True})
     except Exception as e:
-        connection.rollback()
         return JsonResponse({"code":0,"msg":"changePwdError:"+str(e)})
-    finally:
-        cursor.close()
 
 
 def update(request):

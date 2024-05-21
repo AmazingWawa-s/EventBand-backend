@@ -1,26 +1,27 @@
 import json
-import event_band.utils as utils
 from entity.event import PrivateEvent,PublicEvent,Event
 from django.db import connection
-from django.http import JsonResponse
 
+from entity.db import UserDB
 class User():
    
     def __init__(self,request=None):
 
-        if type(request) is dict:
-            # 字典初始化
-            self.set(request)
-        elif request is not None:
-            data = json.loads(request.body.decode("utf-8"))
+        if type(request) is int:
+            self.id=request
+            self.getFromDBById("*",self.id)
+        elif type(request) is str:
+            
+            self.name=request
             self.id=-1
-            self.name=data["userName"]
-            self.password=utils.encoder(data["userPassword"])
+            self.getFromDBByName("*",self.name)
+            
         else:
             # 默认初始化
             self.id=-1
             self.name=""
             self.password=""
+    
     
     def get(self,attr_list):
         if len(attr_list)==1:
@@ -29,8 +30,43 @@ class User():
 
     def set(self,attr_dict):
         for attr,value in attr_dict.items():
-            setattr(self,attr,value)
+            setattr(self,attr[5:],value)
+    def getFromDBById(self,attrs,id):
+        dbop=UserDB()
+        dbop.selectById(attrs,id)
+        result=dbop.get()
+        self.set(result[0])
+    def getFromDBByName(self,attrs,name):
+        dbop=UserDB()
+        dbop.selectByName(attrs,name)
+        result=dbop.get()
+        self.set(result[0])
+    def deleteUser(self):
+        dbop=UserDB()
+        dbop.delete(self.id)
+    def updateToDB(self):
+        dbop=UserDB()
+        dct=vars(self)
+        sq=""
+        for attr,value in dct.items():
+            sq+=("user_"+attr+"="+str(value)+" ")
+        dbop.update(self.id,sq)
             
+        
+    def __del__(self):
+        dbop=UserDB()
+        if id==-1:
+            dbop.insertNewUser(self.name,self.password)
+        elif id>=0:
+            self.updateToDB()
+            
+            
+            
+            
+        
+        
+        
+        
     def create_private_event(self,cursor,event_dict:dict):
         temp_event = PrivateEvent(self.id)
         temp_event.set(self,event_dict)
