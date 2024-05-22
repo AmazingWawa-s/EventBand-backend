@@ -20,6 +20,7 @@ def register(request):
         # 用户名不存在时创建新的用户
         encode_password=utils.encoder(data["userPassword"])
         tUser.set({"user_password":encode_password})
+        #tUser.insertUser()
         return JsonResponse({"code":1,"userNameExist":False,"register_ok":True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"registerError:"+str(e)})
@@ -44,6 +45,7 @@ def login(request):
                 "my_exp":int(time.time())+EXPIRE_TIME
             }
             Token=utils.generatetoken(payload)
+            #tUser.updateToDB()
             return JsonResponse({"code":1,"userNameExist":True,"userPasswordOk":True,"userToken":Token})
         # 密码错误
         else:
@@ -64,7 +66,7 @@ def remove(request):
     
 #改变密码
 def change_pwd(request):
-    cursor = connection.cursor()
+    
 
     try:
         data = json.loads(request.body.decode("utf-8"))
@@ -72,43 +74,12 @@ def change_pwd(request):
         
         id = request.userid
         tUser=User(id)
-        #cursor.execute("select user_password from user where user_id = %s",id)
         if new_password == tUser.get(["password"]):
         # 新密码和原密码相同
             return JsonResponse({"code":1,"duplicatePassword":True})
         else :
-            tUser.set({"user_password":new_password})
-        #sql_data = [new_password,id]
-        #cursor.execute("update user set user_password=%s where user_id=%s",sql_data)
-        #connection.commit()
-        # 新密码有效
+            tUser.set({"user_password":new_password})    
         return JsonResponse({"code":1,"duplicatePassword":False,"updatePassword":True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"changePwdError:"+str(e)})
 
-
-def update(request):
-    cursor = connection.cursor()
-
-    try:   
-        data = json.loads(request.body.decode("utf-8"))  
-        sql_data = [
-            data["phone"],
-            data["id"]
-        ]
-        cursor.execute("update user set phone=%s where id=%s",sql_data)
-        connection.commit()
-        return JsonResponse({"code":1})
-    except Exception as e:
-        connection.rollback()
-        return JsonResponse({"code":0,"msg":"updateError"+str(e)})
-    finally:
-        cursor.close()
-
-
-
-
-# #ODO:
-#     1.生成token的第三方库
-#     2.login中生成token
-#     3.每次数据访问都检查token

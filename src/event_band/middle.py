@@ -28,6 +28,7 @@ class AuthorizeMiddleware(MiddlewareMixin):
                 if time.time() >exp_time:
                     return JsonResponse({'code': 1, 'msg': 'token out of date1'})
                 else :
+                    
                     request.userid=decode_token["userId"]
                     return None
         except Exception as e:

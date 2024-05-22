@@ -1,4 +1,4 @@
-from entity.user import User
+
 
 class Event():
     def __init__(self,creator_id):

@@ -5,7 +5,7 @@ from event_band.settings import SECRET_KEY
 import time
 from django.db import connection
 from django.http import JsonResponse
-from classes.user import User
+from entity.user import User
 current_event_id=0
 
 def encoder(raw):

@@ -7,7 +7,6 @@ import event_band.utils as utils
 import pymysql
 
 from django.db import connection
-from event_band import conn
 
 from entity.user import User,SuperUser
 
@@ -41,7 +40,7 @@ def create_private_event(request):
 
 
 def load_user_page(request):
-    #conn=pymysql.connect(host="192.168.43.246",user="sa",password="",db="eventband",port=3306,charset="utf8")
+    conn=pymysql.connect(host="192.168.43.246",user="sa",password="",db="eventband",port=3306,charset="utf8")
     cursor=conn.cursor(cursor=pymysql.cursors.DictCursor)
 
     try:
