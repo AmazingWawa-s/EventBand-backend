@@ -20,6 +20,7 @@ class User():
             self.name=""
             self.password=""
             raise ValueError("class User initialize unexpected")
+        self.password=""
     
     
     def get(self,attr_list):
@@ -34,13 +35,14 @@ class User():
         
     def getFromDBById(self,attrs,id):
         dbop=UserDB()
-        dbop.select(attrs,id)
+        dbop.selectById(attrs,id)
         result=dbop.get()
         if len(result)!=0:
             self.set(result[0])
+            print(result[0])
     def getFromDBByName(self,attrs,name):
         dbop=UserDB()
-        dbop.select(attrs,name)
+        dbop.selectByName(attrs,name)
         result=dbop.get()
         
         if len(result)!=0:
@@ -48,19 +50,15 @@ class User():
         
    
 
-    def deleteUser(self):
-        dbop=UserDB()
-        dbop.delete(self.id)
-    def insertUser(self):
-        dbop=UserDB()
-        dbop.insertNewUser(self.name,self.password)
+
+
     def autoSave(self):
         dbop=UserDB()
         dct=vars(self)
         sq=""
         for attr,value in dct.items():
             if value is not None and attr is not "id":
-                sq+=('user_'+attr+'="'+value+'", ')
+                sq+=('user_'+attr+'="'+str(value)+'", ')
         sq=sq[:-2]
         
         
@@ -70,10 +68,7 @@ class User():
         
     def __del__(self):
 
-        if self.id==-1:
-            self.insertUser()
-        elif self.id>=0:
-            self.autoSave()
+        pass
             
             
             
@@ -118,9 +113,10 @@ class User():
 
 
 class SuperUser(User):
-    def __init__(self,id,name,password):
-        super().__init__(id,name,password)
-        self.auth = 0
+    def __init__(self,nid):
+        
+        super().__init__(nid)
+
 
     def broadcast(self):
         # 广播消息
@@ -139,15 +135,46 @@ class SuperUser(User):
             temp_event.set()
             event_list.append(temp_event)
         return event_list
+    
+    
+    
+    def __del__(self):
+        
+        if self.authority!=0:
+            raise ValueError(f"expected authority=0,but ={self.authority}")   
+        elif self.id>=0:
+            self.autoSave()
+        
+        super().__del__()
 
 
 
 
 
 class NormalUser(User):
-    def __init__(self,id,name,password):
-        super().__init__(id,name,password)
-        self.auth = 1
+    def __init__(self,nid):
+        super().__init__(nid)
+        
+
+    def deleteUser(self):
+        if self.authority==0:
+            raise ValueError("superuser can't be deleted")
+        dbop=UserDB()
+        dbop.delete(self.id)
+    def changePassword(self,newPassword):
+        if self.authority==0:
+            raise ValueError("superuser can't change password")
+        self.password=newPassword
+        
+
+    
+
+
+    def insertUser(self):
+        if self.authority==0:
+            raise ValueError("superuser can't be added")
+        dbop=UserDB()
+        dbop.insertNewUser(self.name,self.password)
 
     def get_created_event(self):
         pass
@@ -158,5 +185,11 @@ class NormalUser(User):
     def sign_up_event(self):
         # 报名活动
         pass
+    def __del__(self):
+        if self.id==-1:
+            self.insertUser()
+        elif self.id>=0:
+            self.autoSave()
+        super().__del__()
     
     

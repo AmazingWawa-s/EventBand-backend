@@ -8,9 +8,9 @@ from django.conf.urls.static import static
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("login/", uv.login),
+    path("superlogin/",uv.super_login),
     path("register/", uv.register),
     path("changepwd/",uv.change_pwd),
-    path("user/update/",uv.update),
     path("logoff/",uv.remove),
     path("createevent/private/",ev.create_private_event),
     path("userpage/",ev.load_user_page)
