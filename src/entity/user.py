@@ -70,12 +70,6 @@ class User():
 
         pass
             
-            
-            
-            
-        
-        
-        
         
     def create_private_event(self,cursor,event_dict:dict):
         temp_event = PrivateEvent(self.id)

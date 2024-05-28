@@ -32,7 +32,7 @@ class UserDB(DB):
         elif type(nid) is str:
             self.cursor.execute("select "+ attrs +" from user where user_name ="+nid)
     def selectAll(self,attrs):
-        self.cursor.execute("select * from event where user_name =%s",name)
+        self.cursor.execute("select * from event where user_name =%s")
 
     def delete(self,id):
         self.cursor.execute("delete from user where user_id=%s",id)
