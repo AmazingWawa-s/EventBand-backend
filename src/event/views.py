@@ -13,30 +13,28 @@ from entity.user import User,SuperUser
 
 
 def create_private_event(request):
-    cursor = connection.cursor()
     try:
-        data = json.loads(request.body.decode("utf-8"))
-        event_id_now=utils.return_event_id()
-        utils.add_event_id(1)
+        event_id_now=utils.return_event_id(1)
 
         user = User({"id":request.id})
+        data = json.loads(request.body.decode("utf-8"))
         temp_dict = {
             "id":event_id_now,
+            "creator_id":user.get(["id"]),
             "name":data["eventName"],
-            "start_time":data["eventStart"],
-            "end_time":data["eventEnd"],
+            "start_time":data["eventStartTime"],
+            "end_time":data["eventEndTime"],
+            "start_date":data["eventStartDate"],
+            "end_date":data["eventEndDate"],
             "location":data["eventLocation"],
             "description":data["eventDescription"],
         }
-        user.create_private_event(cursor,temp_dict)
+        new_event=user.create_private_event(temp_dict)
         
         # 创建成功
         return JsonResponse({"code":1,"create_Event_Ok":True})
     except Exception as e:
-        connection.rollback()
         return JsonResponse({"code":0,"msg":"createPrivateEventError:"+str(e)})
-    finally:
-        cursor.close()
 
 
 def load_user_page(request):

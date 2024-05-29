@@ -2,7 +2,7 @@ import json
 from entity.event import PrivateEvent,PublicEvent,Event
 from django.db import connection
 
-from entity.db import UserDB
+from entity.db import UserDB,EventDB
 class User():
    
     def __init__(self,request):
@@ -29,9 +29,9 @@ class User():
 
     def set(self,attr_dict):
         for attr,value in attr_dict.items():
-            if attr[5:0] not in self.available:
+            if attr[5:] not in self.available:
                 raise ValueError("Not available from User")
-            elif attr[5:0] in self.available:
+            elif attr[5:] in self.available:
                 setattr(self,attr[5:],value)
         
     def getFromDBById(self,attrs,id):
@@ -72,22 +72,25 @@ class User():
         pass
             
         
-    def create_private_event(self,cursor,event_dict:dict):
-        temp_event = PrivateEvent(self.id)
+    def create_private_event(self,event_dict:dict):
+        
+        # 创建地点——时间表
+        dbop=EventDB()
+        dbop.selectAll()
+        #result=utils.
+
+        if result is None:
+            return None
+
+
+        temp_event = PrivateEvent(-1)
         temp_event.set(self,event_dict)
-    
-        #更新活动简略表
-        sql_data = temp_event.get(["id","start_time","end_time","name","location","description","type"])
-        cursor.execute("insert into event_brief (event_id,event_start,event_end,event_name,event_location,event_description,event_type) values (%s,%s,%s,%s,%s,%s,%s)",sql_data)
-        #更新活动用户关系表
-        sql_data=temp_event.get(["id","creator_id"])
-        cursor.execute("insert into eurelation (eurelation_event_id,eurelation_user_id,eurelation_role) values(%s,%s,1)",sql_data)
-        connection.commit()
+
         
         return temp_event
 
-    def create_public_event(self,cursor,event_dict:dict):
-        temp_event = PublicEvent(self.id)
+    def create_public_event(self,event_dict:dict):
+        temp_event = PublicEvent(-1,self.id)
         temp_event.set(self,event_dict)
     
         #更新活动简略表
