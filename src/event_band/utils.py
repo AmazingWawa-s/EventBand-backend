@@ -6,8 +6,9 @@ import time
 from django.db import connection
 from django.http import JsonResponse
 from entity.user import User
+from entity.semaphore import Semaphore
 current_event_id=0
-
+event_id_sema=1
 def encoder(raw):
     md5 = hashlib.md5()
     md5.update(str(raw).encode("utf-8"))
@@ -31,8 +32,11 @@ def generatetoken(payload):
     
     
 def count_event():
+    global current_event_id
+    global event_id_sema
     cursor=connection.cursor()
     try:
+        event_id_sema=Semaphore(1)
         cursor.execute("select event_id from event order by event_id desc limit 1")
         result=cursor.fetchall()
         if len(result)>0:
@@ -42,12 +46,15 @@ def count_event():
             current_event_id=1
     except Exception as e:
         return JsonResponse({"code":0,"msg":"countEventError:"+str(e)})
-def return_event_id():
-    return current_event_id
-
-def add_event_id(num):
+def return_event_id(num):
     global current_event_id
+    event_id_sema.P()
+    temp=current_event_id
     current_event_id=current_event_id+num
+    event_id_sema.V()
+    return temp
+
+
         
     # def template1(request):
         

@@ -21,17 +21,18 @@ class User():
             self.password=""
             raise ValueError("class User initialize unexpected")
         self.password=""
+        self.available=["id","name","password"]
     
     
     def get(self,attr_list):
-        if len(attr_list)==1:
-            return getattr(self,attr_list[0])
         return [getattr(self,attr) for attr in attr_list]
 
     def set(self,attr_dict):
         for attr,value in attr_dict.items():
-            
-            setattr(self,attr[5:],value)
+            if attr[5:0] not in self.available:
+                raise ValueError("Not available from User")
+            elif attr[5:0] in self.available:
+                setattr(self,attr[5:],value)
         
     def getFromDBById(self,attrs,id):
         dbop=UserDB()

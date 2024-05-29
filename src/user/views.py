@@ -14,7 +14,7 @@ def register(request):
         tUser = NormalUser(data["userName"])
         
         # 用户名已存在
-        if tUser.get(["id"])>=0:
+        if tUser.get(["id"])[0]>=0:
             return JsonResponse({"code":1,"userNameExist":True})
         
         # 用户名不存在时创建新的用户
@@ -32,16 +32,16 @@ def login(request):
         tUser = NormalUser(data["userName"])
         
         # 输入的用户名不存在时返回错误
-        if tUser.get(["id"])==-1:
+        if tUser.get(["id"])[0]==-1:
             return JsonResponse({"code":1,"userNameExist":False})
         
         # 用户名存在
         encode_password=utils.encoder(data["userPassword"])
         
         # 密码正确
-        if tUser.get(["password"]) == encode_password:
+        if tUser.get(["password"])[0] == encode_password:
             payload={
-                "userId":tUser.get(["id"]),
+                "userId":tUser.get(["id"])[0],
                 "my_exp":int(time.time())+EXPIRE_TIME
             }
             Token=utils.generatetoken(payload)
@@ -74,7 +74,7 @@ def change_pwd(request):
         
         id = request.userid
         tUser=NormalUser(id)
-        if new_password == tUser.get(["password"]):
+        if new_password == tUser.get(["password"])[0]:
         # 新密码和原密码相同
             return JsonResponse({"code":1,"duplicatePassword":True})
         else :
@@ -89,21 +89,21 @@ def super_login(request):
         if "userAuthority" not in data:
             raise ValueError("no authority error")
         sUser = SuperUser(data["userName"])
-        if data["userAuthority"] !=0 or sUser.get(["authority"])!=0:
+        if data["userAuthority"] !=0 or sUser.get(["authority"])[0]!=0:
             return JsonResponse({"code":1,"isSuperUser":False}) 
         
         
         # 输入的用户名不存在时返回错误
-        if sUser.get(["id"])==-1:
+        if sUser.get(["id"])[0]==-1:
             return JsonResponse({"code":1,"isSuperUser":True,"userNameExist":False})
         
         # 用户名存在
         encode_password=utils.encoder(data["userPassword"])
         
         # 密码正确
-        if sUser.get(["password"]) == encode_password:
+        if sUser.get(["password"])[0] == encode_password:
             payload={
-                "userId":sUser.get(["id"]),
+                "userId":sUser.get(["id"])[0],
                 "my_exp":int(time.time())+EXPIRE_TIME
             }
             Token=utils.generatetoken(payload)
