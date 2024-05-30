@@ -1,25 +1,25 @@
 from entity.db import LocationDB
 class Location():
-    def __init__(self,name,capacity,description,type,id=-1):
+    def __init__(self,dict,id=-1):
         self.available=["id","name","description","capacity","type"]
-        if id<0:
-            raise ValueError("Location Id <0")
+        if id==-1:
+            self.state="create"
+            self.set(dict)
         else:
-            self.id=id
-            self.name = name
-            self.description=description
-            self.capacity = capacity
-            self.type=type
+            self.state="update"
             self.getFromDB("*",self.id)
     def __del__(self):
-        self.autoSave()
-        pass
-    def autoSave(self):
+        if self.state=="create":
+            self.addloaction()
+        elif self.state=="update":
+            self.autoUpdate()
+        
+    def autoUpdate(self):
         dbop=LocationDB()
         dct=vars(self)
         sq=""
         for attr,value in dct.items():
-            if value is not None and attr is not "id" and attr is not "available":
+            if attr in self.available:
                 sq+=('location_'+attr+'="'+str(value)+'", ')
         sq=sq[:-2]
         
@@ -50,6 +50,7 @@ class Location():
     def addloaction(self):
         dbop=LocationDB()
         dbop.insertNewLocation(self.name,self.description,self.capacity,self.type)
+    
         
         
     
