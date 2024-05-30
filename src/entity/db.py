@@ -47,12 +47,12 @@ class UserDB(DB):
 class EventDB(DB):
     def __init__(self):
         super().__init__()
-    def checkCollision(self,location,date,start,end):
-        self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id elrelation_start>=%s and elrelation_start<=%s or elrelation_date=%s and elrelation_end>=%s and elrelation_end<=%s or elrelation_date=%s and elrelation_start<=%s and elrelation_end>=%s",[date,start,end,date,start,end,date,start,end])
-    #def checkCollision2(self,date,start,end):
-       # self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_end>=%s and elrelation_end<=%s",[date,start,end]) 
-    #def checkCollision3(self,date,start,end):
-        #    self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_start<=%s and elrelation_end>=%s",[date,start,end]) 
+    def checkCollision1(self,location,date,start,end):
+        self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id=%s,elrelation_start>=%s and elrelation_start<=%s",[date,location,start,end])
+    def checkCollision2(self,location,date,start,end):
+        self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id=%s,elrelation_end>=%s and elrelation_end<=%s",[date,location,start,end])
+    def checkCollision3(self,location,date,start,end):
+        self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id=%s,elrelation_start<=%s and elrelation_end>=%s",[date,location,start,end])
     def selectById(self,attrs,id):
         self.cursor.execute("select "+ attrs +" from event_brief where event_id ="+str(id))
     def selectEUByUserIdRole(self,attrs,id,role):

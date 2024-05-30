@@ -96,7 +96,15 @@ class User():
         en_min=dit["end_time"]["minute"]
         en=en_hour*60+en_min
         dt=str(year)+"-"+str(month)+"-"+str(day)
-        edbop.checkCollision(dt,star,en)
+        edbop.checkCollision1(dt,star,en)
+        result=edbop.get()
+        if len(result)>=1:
+            return False
+        edbop.checkCollision2(dt,star,en)
+        result=edbop.get()
+        if len(result)>=1:
+            return False
+        edbop.checkCollision3(dt,star,en)
         result=edbop.get()
         if len(result)>=1:
             return False
