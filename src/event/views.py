@@ -5,11 +5,7 @@ import json
 from django.http import JsonResponse
 import event_band.utils as utils
 import pymysql
-
-from django.db import connection
-
 from entity.user import User,SuperUser
-
 
 
 def create_private_event(request):
@@ -58,16 +54,30 @@ def load_user_page(request):
         cursor.close()
 
 
-def get_events(request):
-    cursor = connection.cursor()
+def get_created_events(request):
 
     try:
-        user=SuperUser({"id":request.id})
-        event_list = user.get_all_events(cursor)   # 活动对象列表
-
-        return JsonResponse({"code":1,"data":[event.to_dict() for event in event_list]})
+        user = User({"id":request.id})
+        result=user.get_created_event_id()
+        return JsonResponse({"code":1, "data": [i["event_id"] for i in result]})
     except Exception as e:
-        connection.rollback()
-        return JsonResponse({"code":0,"msg":"getAllEventsError:"+str(e)})
-    finally:
-        cursor.close()
+        return JsonResponse({"code":0,"msg":"getCreatedEventsError:"+str(e)})
+    
+
+def get_participated_events(request):
+    try:
+        user = User({"id":request.id})
+        result=user.get_created_event_id()
+        return JsonResponse({"code":1, "data": [i["event_id"] for i in result]})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"getParticipatedEventsError:"+str(e)})
+
+def delete_event(request):
+    try:
+        user = User({"id":request.id})
+        data = json.loads(request.body.decode("utf-8"))
+        user.delete_event(data["event_id"])
+        return JsonResponse({"code":1, "removeOk": True})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"deleteEventError:"+str(e)})
+    

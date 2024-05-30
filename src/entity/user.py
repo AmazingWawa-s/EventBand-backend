@@ -130,7 +130,7 @@ class User():
 
     def get_all_locations(self):
         dbop=LocationDB()
-        dbop.selectAll()
+        dbop.selectAllLocations()
         return dbop.get()
 
 

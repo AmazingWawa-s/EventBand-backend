@@ -44,7 +44,7 @@ class Location():
                 setattr(self,attr[9:],value)
     def getFromDB(self,attrs,id):
         dbop=LocationDB()
-        dbop.selectById(attrs,id)
+        dbop.selectLocationById(attrs,id)
         result=dbop.get()
         if len(result)==1:
             self.set(result[0])

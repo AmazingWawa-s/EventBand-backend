@@ -84,10 +84,10 @@ class LocationDB(DB):
     def __init__(self):
         super().__init__()
         
-    def selectById(self,attrs,id):
+    def selectLocationById(self,attrs,id):
         self.cursor.execute("select "+ attrs +" from location where location_id ="+str(id))
     
-    def selectAll(self):
+    def selectAllLocations(self):
         self.cursor.execute("select * from location")
         
     def insertNewLocation(self,name,description,capacity,type):

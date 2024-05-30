@@ -5,7 +5,7 @@ from django.http import JsonResponse
 import event_band.utils as utils
 from event_band.settings import EXPIRE_TIME
 import time
-from entity.user import SuperUser,NormalUser
+from entity.user import SuperUser,NormalUser,User
 
 #注册
 def register(request):
@@ -114,3 +114,24 @@ def super_login(request):
             return JsonResponse({"code":1,"isSuperUser":True,"userNameExist":True,"userPasswordOk":False})     
     except Exception as e:
         return JsonResponse({"code":0,"msg":"superLoginError:"+str(e)})
+    
+
+def get_all_locations(request):
+    try:
+        user = User({"id":request.id})
+        result=user.get_all_locations()
+        return JsonResponse({"code":1,"data":result})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"getAllLocationsError:"+str(e)})
+    
+def delete_location(request):
+    try:
+        user = User({"id":request.id})
+        data = json.loads(request.body.decode("utf-8"))
+        user.delete_location(data["eventId"])
+        return JsonResponse({"code":1,"removeOk":True})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"deleteLocationError:"+str(e)})
+    
+def update_location(request):
+    pass
