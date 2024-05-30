@@ -83,20 +83,41 @@ class User():
         dbop.selectEUByUserIdRole("event_id",self.id,0)
         return dbop.get()
         
-    def create_private_event(self,event_dict:dict):
+    def create_private_event(self,dit:dict):
         
-        # 创建地点——时间表
-        dbop=EventDB()
-        dbop.selectAll()
-        #result=utils.
+        edbop=EventDB()
+        year=dit["start_date"]["year"]
+        month=dit["start_date"]["month"]
+        day=dit["start_date"]["day"]
+        star_hour=dit["start_time"]["hour"]
+        star_min=dit["start_time"]["minute"]
+        star=star_hour*60+star_min
+        en_hour=dit["end_time"]["hour"]
+        en_min=dit["end_time"]["minute"]
+        en=en_hour*60+en_min
+        dt=str(year)+"-"+str(month)+"-"+str(day)
+        edbop.checkCollision(dt,star,en)
+        result=edbop.get()
+        if len(result)>=1:
+            return False
+        else :
+            temp_event = PrivateEvent(-1)
+            tid=utils.return_current_event_id(1)
+            temp_event.set(self,{"event_id":tid,"event_name":dit["name"],"event_start":dt+":"+str(star),"event_end":dt+":"+str(en),"event_location":dit["location"],"event_description":dit["description"],"event_type":1,"event_creator_id":self.id})
+            edbop.insertEU(temp_event.get(["id"])[0],self.id,1)
+            edbop.insertEL(temp_event.get(["id"])[0],dit["location"],dt,star,en)
+            return True
+            
+            
+        
+        
+        
+        
+        
 
-        if result is None:
-            return None
+        
 
-
-        temp_event = PrivateEvent(-1)
-        event_dict["id"]=utils.return_current_event_id(1)
-        temp_event.set(self,event_dict)
+        
 
         
         return temp_event

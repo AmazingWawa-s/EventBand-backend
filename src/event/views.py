@@ -10,8 +10,6 @@ from entity.user import User,SuperUser
 
 def create_private_event(request):
     try:
-        
-
         user = User({"id":request.id})
         data = json.loads(request.body.decode("utf-8"))
         temp_dict = {
@@ -24,10 +22,12 @@ def create_private_event(request):
             "location":data["eventLocation"],
             "description":data["eventDescription"],
         }
-        new_event=user.create_private_event(temp_dict)
+        s=user.create_private_event(temp_dict)
+        if s==True:
+            return JsonResponse({"code":1,"create_Event_Ok":True})
+        elif s==False:
+            return JsonResponse({"code":1,"create_Event_Ok":False,"time_collision":True})
         
-        # 创建成功
-        return JsonResponse({"code":1,"create_Event_Ok":True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"createPrivateEventError:"+str(e)})
 

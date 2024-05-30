@@ -11,7 +11,7 @@ class Location():
     
     def __del__(self):
         if self.state=="create":
-            self.addLocation()
+            self.addlocation()
         elif self.state=="update":
             self.autoUpdate()
         
@@ -23,9 +23,6 @@ class Location():
             if attr in self.available:
                 sq+=('location_'+attr+'="'+str(value)+'", ')
         sq=sq[:-2]
-        
-        
-
         dbop.updateLocation(self.id,sq)
 
     def addLocation(self):
@@ -50,6 +47,13 @@ class Location():
             self.set(result[0])
         else:raise ValueError("Location Id Not Exist")
             
+    #超级用户新增场地
+    def addlocation(self):
+        dbop=LocationDB()
+        dbop.insertNewLocation(self.id,self.name,self.description,self.capacity,self.type)
+    def deletelocation(self):
+        dbop=LocationDB()
+        dbop.deleteLocationById(self.id)
     
         
         
