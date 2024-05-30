@@ -49,10 +49,11 @@ class EventDB(DB):
         super().__init__()
     def selectById(self,attrs,id):
         self.cursor.execute("select "+ attrs +" from event_brief where event_id ="+str(id))
-    def selectEUByUserId(self,attrs,id):
-        self.cursor.execute("select distinct"+ attrs +" from eurelation where event_id ="+str(id))
+    def selectEUByUserIdRole(self,attrs,id,role):
+        self.cursor.execute("select distinct"+ attrs +" from eurelation where eurelation_user_id ="+str(id)+" and eurelation_role="+str(role))
     def selectEUByEventId(self,attrs,id):
-        self.cursor.execute("select distinct"+ attrs +" from eurelation where event_id ="+str(id))
+        self.cursor.execute("select distinct"+ attrs +" from eurelation where eurelation_event_id ="+str(id))
+    
     def insertEU(self,event_id,user_id,role):
         self.cursor.execute("insert into eurelation (eurelation_event_id,eurelation_user_id,eurelation_role) values(%s,%s,%s)",[event_id,user_id,role])
         self.conn.commit()
@@ -68,6 +69,16 @@ class EventDB(DB):
         self.conn.commit()
     def getLastEventId(self):
         self.cursor.execute("select event_id from event_brief order by event_id desc limit 1")
+
+    def deleteEventById(self,id):
+        self.cursor.execute("delete from event_brief where event_id=%s",id)
+        self.conn.commit()
+    def deleteEUByEventId(self,event_id):
+        self.cursor.execute("delete from eurelation where eurelation_event_id=%s and eurelation_role=1",event_id)
+        self.conn.commit()
+    def deleteEUByUserId(self,user_id):
+        self.cursor.execute("delete from eurelation where eurelation_user_id=%s and eurelation_role=1",user_id)
+        self.conn.commit()
           
 class LocationDB(DB):
     def __init__(self):
@@ -88,3 +99,6 @@ class LocationDB(DB):
         self.conn.commit()
     def getLastLocationId(self):
         self.cursor.execute("select location_id from location order by location_id desc limit 1")
+    def deleteLocation(self,id):
+        self.cursor.execute("delete from location where location_id=%s",id)
+        self.conn.commit()

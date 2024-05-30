@@ -26,7 +26,14 @@ class Event():
             self.state="update"
             self.getFromDB("*")
             
-
+            
+    def __del__(self):
+        if self.state=="create":
+            # 新建
+            self.insertEvent()
+        elif self.state=="update":
+            # 更新
+            self.autoUpdate()
 
     
     def get(self,attr_list):
@@ -82,14 +89,7 @@ class Event():
         # for i in self.participants:
         #     dbop.insertEU(self.id, i, 0)
 
-    def __del__(self):
 
-        if self.state=="create":
-            # 新建
-            self.insertEvent()
-        elif self.state=="update":
-            # 更新
-            self.autoUpdate()
 
 
 

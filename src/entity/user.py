@@ -1,5 +1,6 @@
 import json
 from entity.event import PrivateEvent,PublicEvent,Event
+from entity.location import Location
 from django.db import connection
 import event_band.utils as utils
 
@@ -12,6 +13,8 @@ class User():
             self.name=""
             self.id=request
             self.getFromDBById("*",self.id) 
+            self.created_event_id=[i["eurelation_event_id"] for i in self.get_created_event_id()]
+            self.participated_event_id=[i["eurelation_event_id"] for i in self.get_participated_event_id()]
         elif type(request) is str:
             self.name=request
             self.id=-1
@@ -64,16 +67,21 @@ class User():
             if value is not None and attr is not "id" and attr is not "available":
                 sq+=('user_'+attr+'="'+str(value)+'", ')
         sq=sq[:-2]
-        
-        
 
         dbop.updateUser(self.id,sq)
             
         
     def __del__(self):
-
         pass
-            
+
+    def get_created_event_id(self):
+        dbop=EventDB()
+        dbop.selectEUByUserIdRole("event_id",self.id,1)
+        return dbop.get()
+    def get_participated_event_id(self):
+        dbop=EventDB()
+        dbop.selectEUByUserIdRole("event_id",self.id,0)
+        return dbop.get()
         
     def create_private_event(self,event_dict:dict):
         
@@ -92,7 +100,7 @@ class User():
 
         
         return temp_event
-
+    
     def create_public_event(self,event_dict:dict):
         temp_event = PublicEvent(-1,self.id)
         temp_event.set(self,event_dict)
@@ -110,6 +118,22 @@ class User():
         
         return temp_event  
     
+    def delete_event(self,event_id):
+        if event_id not in self.created_event_id:
+            raise ValueError("Only creator can delete event")
+        
+        dbop=EventDB()
+        dbop.deleteEUByEventId(event_id)
+
+    def update_event(self):
+        pass
+
+    def get_all_locations(self):
+        dbop=LocationDB()
+        dbop.selectAll()
+        return dbop.get()
+
+
 
     
 
@@ -118,6 +142,13 @@ class SuperUser(User):
     def __init__(self,nid):
         
         super().__init__(nid)
+
+    def __del__(self):
+        if self.authority!=0:
+            raise ValueError(f"expected authority=0,but ={self.authority}")   
+        elif self.id>=0:
+            self.autoUpdate()
+        super().__del__()
 
 
     def broadcast(self):
@@ -138,21 +169,16 @@ class SuperUser(User):
             event_list.append(temp_event)
         return event_list
     
-    #超级用户新增场地
-    def addloaction(self):
+    def add_location(self,location_dict):
+        new_location=Location(location_dict,-1)
+
+    def delete_location(self,location_id):
         dbop=LocationDB()
-        dbop.insertNewLocation(self.name,self.description,self.capacity,self.type)
+        dbop.deleteLocation(location_id)
+    def update_location(self,location_dict,location_id):
+        temp_location=Location(None,location_id)
+        temp_location.set(location_dict)
     
-    
-    
-    def __del__(self):
-        
-        if self.authority!=0:
-            raise ValueError(f"expected authority=0,but ={self.authority}")   
-        elif self.id>=0:
-            self.autoUpdate()
-        
-        super().__del__()
 
 
 
@@ -161,6 +187,13 @@ class SuperUser(User):
 class NormalUser(User):
     def __init__(self,nid):
         super().__init__(nid)
+
+    def __del__(self):
+        if self.id==-1:
+            self.insertUser()
+        elif self.id>=0:
+            self.autoUpdate()
+        super().__del__()
         
 
     def deleteUser(self):
@@ -192,11 +225,5 @@ class NormalUser(User):
     def sign_up_event(self):
         # 报名活动
         pass
-    def __del__(self):
-        if self.id==-1:
-            self.insertUser()
-        elif self.id>=0:
-            self.autoUpdate()
-        super().__del__()
-    
+
     
