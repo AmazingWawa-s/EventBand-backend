@@ -11,9 +11,6 @@ class DB():
     def rollback(self):
         self.cursor.rollback()
     
-    #虚函数select
-    def select(self,table):
-        raise NotImplementedError
     def __del__(self):
         self.cursor.close()
     
