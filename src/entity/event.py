@@ -6,8 +6,8 @@ class Event():
         self.id = event_id
         self.creator_id=-1
         self.name = ""
-        self.start_time:str= ""
-        self.end_time:str= ""
+        self.start_time=0
+        self.end_time=0
         self.start_date:str=""
         self.end_date:str=""
         self.location = -1
@@ -15,7 +15,7 @@ class Event():
         self.participants:list = []
         self.type=""
 
-        self.available=["id","creator_id","name","start_time","end_time","start_date","end_date","location","description","type"]
+        self.available=["id","creator_id","name","start","end","location","description","type"]
 
 
         if event_id == -1:
@@ -30,8 +30,6 @@ class Event():
 
     
     def get(self,attr_list):
-        if len(attr_list)==1:
-            return getattr(self,attr_list[0])
         return [getattr(self,attr) for attr in attr_list]
     def set(self,attr_dict):
         for attr,value in attr_dict.items():

@@ -47,6 +47,12 @@ class UserDB(DB):
 class EventDB(DB):
     def __init__(self):
         super().__init__()
+    def checkCollision(self,location,date,start,end):
+        self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id elrelation_start>=%s and elrelation_start<=%s or elrelation_date=%s and elrelation_end>=%s and elrelation_end<=%s or elrelation_date=%s and elrelation_start<=%s and elrelation_end>=%s",[date,start,end,date,start,end,date,start,end])
+    #def checkCollision2(self,date,start,end):
+       # self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_end>=%s and elrelation_end<=%s",[date,start,end]) 
+    #def checkCollision3(self,date,start,end):
+        #    self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_start<=%s and elrelation_end>=%s",[date,start,end]) 
     def selectById(self,attrs,id):
         self.cursor.execute("select "+ attrs +" from event_brief where event_id ="+str(id))
     def selectEUByUserId(self,attrs,id):
@@ -59,6 +65,8 @@ class EventDB(DB):
     def insertEvent(self,toinsert):
         self.cursor.execute("insert into event_brief " + toinsert)
         self.conn.commit()
+    def insertEL(self,event_id,location_id,date,start,end):
+        self.cursor.execute("insert into elrelation (elrelation_event_id,elrelation_location_id,elrelation_date,elrelation_start,elrelation_end) values(%s,%s,%s,%s,%s)",[event_id,location_id,date,start,end])
     # def delete(self,id):
     #     self.cursor.execute("delete from user where user_id=%s",id)
     #     self.conn.commit()
@@ -77,10 +85,10 @@ class LocationDB(DB):
         self.cursor.execute("select "+ attrs +" from location where location_id ="+str(id))
     
     def selectAll(self):
-        self.cursor.execute("select * from location")
+        self.cursor.execute("select * from location ")
         
-    def insertNewLocation(self,name,description,capacity,type):
-        self.cursor.execute("insert into loaction (loaction_name,location_description.location_capacity,location_type) values (%s,%s,%s,%s)",[name,description,capacity,type])
+    def insertNewLocation(self,lid,name,description,capacity,type):
+        self.cursor.execute("insert into loaction (location_id,loaction_name,location_description.location_capacity,location_type) values (%s,%s,%s,%s,%s)",[lid,name,description,capacity,type])
         self.conn.commit()
     def updateLocation(self,id,toset):
         self.cursor.execute("update location set "+toset+" where location_id="+str(id))
@@ -88,3 +96,7 @@ class LocationDB(DB):
         self.conn.commit()
     def getLastLocationId(self):
         self.cursor.execute("select location_id from location order by location_id desc limit 1")
+    def deleteLocationById(self,id):
+        self.cursor.execute("delete from location where location_id=%s",id)
+        self.cursor.execute("delete from elrelation where elrelation_location_id=%s",id)
+        self.conn.commit()
