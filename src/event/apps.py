@@ -1,5 +1,5 @@
 from django.apps import AppConfig
-from event_band.utils import count_event
+from event_band.utils import count_event,count_location
 
 
 class EventConfig(AppConfig):
@@ -14,6 +14,7 @@ class YourAppConfig(AppConfig):
  
     def ready(self):
         count_event()
+        count_location()
         
         # 在这里调用你想要在启动时运行的函数
         

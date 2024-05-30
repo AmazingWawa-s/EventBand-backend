@@ -1,7 +1,7 @@
 import pymysql
 
 class DB():
-    def __init__(self) -> None:
+    def __init__(self):
         self.conn=pymysql.connect(host="192.168.43.246",user="sa",password="",db="eventband",port=3306,charset="utf8")
         self.cursor=self.conn.cursor(cursor=pymysql.cursors.DictCursor)
         #self.conn=connection.connect(host="192.168.43.246",user="sa",password="",db="eventband",port=3306,charset="utf8")
@@ -11,9 +11,8 @@ class DB():
     def rollback(self):
         self.cursor.rollback()
     
-    #虚函数select
-    def select(self,table):
-        raise NotImplementedError
+    
+    
     def __del__(self):
         self.cursor.close()
     
@@ -33,13 +32,13 @@ class UserDB(DB):
     def selectAll(self,attrs):
         self.cursor.execute("select * from event where user_name =%s")
 
-    def delete(self,id):
+    def deleteUser(self,id):
         self.cursor.execute("delete from user where user_id=%s",id)
         self.conn.commit()
     def insertNewUser(self,name,password):
         self.cursor.execute("insert into user (user_name,user_password) values (%s,%s)",[name,password])
         self.conn.commit()
-    def update(self,id,toset):
+    def updateUser(self,id,toset):
         self.cursor.execute("update user set "+toset+" where user_id="+str(id))
         #self.cursor.execute("update user set (%s) where user_id=%s",(toset,id))
         self.conn.commit()
@@ -57,15 +56,34 @@ class EventDB(DB):
     def insertEU(self,event_id,user_id,role):
         self.cursor.execute("insert into eurelation (eurelation_event_id,eurelation_user_id,eurelation_role) values(%s,%s,%s)",[event_id,user_id,role])
         self.conn.commit()
-    def insert(self,toinsert):
+    def insertEvent(self,toinsert):
         self.cursor.execute("insert into event_brief " + toinsert)
         self.conn.commit()
     # def delete(self,id):
     #     self.cursor.execute("delete from user where user_id=%s",id)
     #     self.conn.commit()
-    def update(self,id,toset):
+    def updateEvent(self,id,toset):
         self.cursor.execute("update event_brief set "+toset+" where event_id="+str(id))
         #self.cursor.execute("update user set (%s) where user_id=%s",(toset,id))
-        self.conn.commit()       
+        self.conn.commit()
+    def getLastEventId(self):
+        self.cursor.execute("select event_id from event_brief order by event_id desc limit 1")
+          
+class LocationDB(DB):
+    def __init__(self):
+        super().__init__()
         
+    def selectById(self,attrs,id):
+        self.cursor.execute("select "+ attrs +" from location where location_id ="+str(id))
     
+    
+        
+    def insertNewLocation(self,name,description,capacity,type):
+        self.cursor.execute("insert into loaction (loaction_name,location_description.location_capacity,location_type) values (%s,%s,%s,%s)",[name,description,capacity,type])
+        self.conn.commit()
+    def updateLocation(self,id,toset):
+        self.cursor.execute("update location set "+toset+" where location_id="+str(id))
+        #self.cursor.execute("update user set (%s) where user_id=%s",(toset,id))
+        self.conn.commit()
+    def getLastLocationId(self):
+        self.cursor.execute("select location_id from location order by location_id desc limit 1")

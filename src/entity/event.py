@@ -32,7 +32,7 @@ class Event():
         dbop=EventDB()
         dbop.selectById(attrs,self.id)
         result=dbop.get()        
-        if len(result)!=0:
+        if len(result)==1:
             self.set(result[0])
         # 获取参加者id
         dbop.selectEUByEventId("user_id",self.id)
@@ -55,7 +55,7 @@ class Event():
                 sq+=('"'+str(value)+'", ')
         sq=sq[:-2]  
         sq+=")"
-        dbop.insert(self.id,sq)
+        dbop.insertEvent(self.id,sq)
 
         for i in self.participants:
             dbop.insertEU(self.id, i, 0)
@@ -70,14 +70,14 @@ class Event():
             if (value is not None) and (attr is not "id") and (attr is not "participants"):
                 sq+=('event_'+attr+'="'+str(value)+'", ')
         sq=sq[:-2]
-        dbop.update(self.id,sq)
+        dbop.updateEvent(self.id,sq)
 
         for i in self.participants:
             dbop.insertEU(self.id, i, 0)
 
     def __del__(self):
-        if :
-            return
+        #if :
+            #return
 
         dbop=EventDB()
         dbop.selectById("event_id",self.id)

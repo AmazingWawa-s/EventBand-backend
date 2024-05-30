@@ -7,8 +7,14 @@ from django.db import connection
 from django.http import JsonResponse
 from entity.user import User
 from entity.semaphore import Semaphore
+from entity.db import EventDB,LocationDB
+
+
 current_event_id=0
 event_id_sema=1
+
+current_location_id=0
+location_id_sema=1
 def encoder(raw):
     md5 = hashlib.md5()
     md5.update(str(raw).encode("utf-8"))
@@ -30,15 +36,16 @@ def generatetoken(payload):
     except Exception as e:
         return "generateTokenError:"+str(e)
     
-    
+#初始化current_event_id   
 def count_event():
     global current_event_id
     global event_id_sema
-    cursor=connection.cursor()
     try:
+        dbop=EventDB()
+        dbop.getLastEventId()
+        result=dbop.get()
         event_id_sema=Semaphore(1)
-        cursor.execute("select event_id from event order by event_id desc limit 1")
-        result=cursor.fetchall()
+        
         if len(result)>0:
             current_event_id=result[0][0]+1
             
@@ -46,13 +53,38 @@ def count_event():
             current_event_id=1
     except Exception as e:
         return JsonResponse({"code":0,"msg":"countEventError:"+str(e)})
-def return_event_id(num):
+def return_current_event_id(num):
     global current_event_id
     event_id_sema.P()
     temp=current_event_id
     current_event_id=current_event_id+num
     event_id_sema.V()
     return temp
+#初始化current_location_id
+def count_location():
+    global current_location_id
+    global location_id_sema
+    try:
+        dbop=LocationDB()
+        dbop.getLastEventId()
+        result=dbop.get()
+        location_id_sema=Semaphore(1)
+        if len(result)>0:
+            current_location_id=result[0][0]+1    
+        else: 
+            current_location_id=1
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"countEventError:"+str(e)})
+def return_current_location_id(num):
+    global current_location_id
+    location_id_sema.P()
+    temp=current_location_id
+    current_location_id=current_location_id+num
+    location_id_sema.V()
+    return temp
+    
+    
+    
 
 
         

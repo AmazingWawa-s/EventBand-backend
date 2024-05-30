@@ -6,6 +6,7 @@ from entity.db import UserDB,EventDB
 class User():
    
     def __init__(self,request):
+        self.available=["id","name","password"]
         if type(request) is int:
             self.name=""
             self.id=request
@@ -20,8 +21,7 @@ class User():
             self.name=""
             self.password=""
             raise ValueError("class User initialize unexpected")
-        self.password=""
-        self.available=["id","name","password"]
+        
     
     
     def get(self,attr_list):
@@ -38,16 +38,18 @@ class User():
         dbop=UserDB()
         dbop.selectById(attrs,id)
         result=dbop.get()
-        if len(result)!=0:
+        if len(result)==1:
             self.set(result[0])
-            print(result[0])
+        else:raise ValueError("User Id Not Exist")
+            
     def getFromDBByName(self,attrs,name):
         dbop=UserDB()
         dbop.selectByName(attrs,name)
         result=dbop.get()
         
-        if len(result)!=0:
+        if len(result)==1:
             self.set(result[0])
+        
         
    
 
@@ -58,13 +60,13 @@ class User():
         dct=vars(self)
         sq=""
         for attr,value in dct.items():
-            if value is not None and attr is not "id":
+            if value is not None and attr is not "id" and attr is not "available":
                 sq+=('user_'+attr+'="'+str(value)+'", ')
         sq=sq[:-2]
         
         
 
-        dbop.update(self.id,sq)
+        dbop.updateUser(self.id,sq)
             
         
     def __del__(self):
@@ -158,7 +160,7 @@ class NormalUser(User):
         if self.authority==0:
             raise ValueError("superuser can't be deleted")
         dbop=UserDB()
-        dbop.delete(self.id)
+        dbop.deleteUser(self.id)
     def changePassword(self,newPassword):
         if self.authority==0:
             raise ValueError("superuser can't change password")
