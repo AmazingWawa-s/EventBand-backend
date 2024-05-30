@@ -12,9 +12,9 @@ class Location():
             self.type=type
             self.getFromDB("*",self.id)
     def __del__(self):
-        self.autoSave()
+        self.autoUpdate()
         pass
-    def autoSave(self):
+    def autoUpdate(self):
         dbop=LocationDB()
         dct=vars(self)
         sq=""
@@ -46,10 +46,7 @@ class Location():
             self.set(result[0])
         else:raise ValueError("Location Id Not Exist")
             
-    #超级用户新增场地
-    def addloaction(self):
-        dbop=LocationDB()
-        dbop.insertNewLocation(self.name,self.description,self.capacity,self.type)
+
         
         
     

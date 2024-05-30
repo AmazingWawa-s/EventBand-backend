@@ -1,8 +1,9 @@
 import json
 from entity.event import PrivateEvent,PublicEvent,Event
 from django.db import connection
+import event_band.utils as utils
 
-from entity.db import UserDB,EventDB
+from entity.db import UserDB,EventDB,LocationDB
 class User():
    
     def __init__(self,request):
@@ -55,7 +56,7 @@ class User():
 
 
 
-    def autoSave(self):
+    def autoUpdate(self):
         dbop=UserDB()
         dct=vars(self)
         sq=""
@@ -86,6 +87,7 @@ class User():
 
 
         temp_event = PrivateEvent(-1)
+        event_dict["id"]=utils.return_current_event_id(1)
         temp_event.set(self,event_dict)
 
         
@@ -136,6 +138,11 @@ class SuperUser(User):
             event_list.append(temp_event)
         return event_list
     
+    #超级用户新增场地
+    def addloaction(self):
+        dbop=LocationDB()
+        dbop.insertNewLocation(self.name,self.description,self.capacity,self.type)
+    
     
     
     def __del__(self):
@@ -143,7 +150,7 @@ class SuperUser(User):
         if self.authority!=0:
             raise ValueError(f"expected authority=0,but ={self.authority}")   
         elif self.id>=0:
-            self.autoSave()
+            self.autoUpdate()
         
         super().__del__()
 
@@ -189,7 +196,7 @@ class NormalUser(User):
         if self.id==-1:
             self.insertUser()
         elif self.id>=0:
-            self.autoSave()
+            self.autoUpdate()
         super().__del__()
     
     

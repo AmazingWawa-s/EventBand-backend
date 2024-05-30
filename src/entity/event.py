@@ -2,6 +2,7 @@ from entity.db import UserDB,EventDB
 
 class Event():
     def __init__(self,event_id):
+
         self.id = event_id
         self.creator_id=-1
         self.name = ""
@@ -14,9 +15,17 @@ class Event():
         self.participants:list = []
         self.type=""
 
-        if self.id != -1:
+        self.available=["id","creator_id","name","start_time","end_time","start_date","end_date","location","description","type"]
+
+
+        if event_id == -1:
+            # 创建
+            self.state="create"
+        elif event_id>=0:
             # 活动已经创建过，直接载入数据
+            self.state="update"
             self.getFromDB("*")
+            
 
 
     
@@ -57,44 +66,37 @@ class Event():
         sq+=")"
         dbop.insertEvent(self.id,sq)
 
-        for i in self.participants:
-            dbop.insertEU(self.id, i, 0)
 
 
-
-    def autoSave(self):
+    def autoUpdate(self):
         dbop=EventDB()
         dct=vars(self)
         sq=""
         for attr,value in dct.items():
-            if (value is not None) and (attr is not "id") and (attr is not "participants"):
+            if attr in self.available:
                 sq+=('event_'+attr+'="'+str(value)+'", ')
         sq=sq[:-2]
         dbop.updateEvent(self.id,sq)
 
-        for i in self.participants:
-            dbop.insertEU(self.id, i, 0)
+        # 数据库应该根据 创建者/参与者 区分查询
+        # for i in self.participants:
+        #     dbop.insertEU(self.id, i, 0)
 
     def __del__(self):
-        #if :
-            #return
 
-        dbop=EventDB()
-        dbop.selectById("event_id",self.id)
-        result = dbop.get()
-        if len(result)==0:
+        if self.state=="create":
             # 新建
             self.insertEvent()
-        elif len(result)>0:
+        elif self.state=="update":
             # 更新
-            self.autoSave()
+            self.autoUpdate()
 
 
 
 
 class PrivateEvent(Event):
-    def __init__(self,event_id,creator_id):
-        super().__init__(self,event_id,creator_id)
+    def __init__(self,event_id):
+        super().__init__(self,event_id)
         self.type="private"
 
     def to_dict(self) -> dict:
@@ -106,7 +108,7 @@ class PrivateEvent(Event):
 
  
 class PublicEvent(Event):
-    def __init__(self,id,name,start_time,end_time):
-        super().__init__(self,id,name,start_time,end_time)
+    def __init__(self,id):
+        super().__init__(self,id)
         self.type="public"
  

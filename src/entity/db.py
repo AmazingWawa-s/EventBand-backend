@@ -76,7 +76,8 @@ class LocationDB(DB):
     def selectById(self,attrs,id):
         self.cursor.execute("select "+ attrs +" from location where location_id ="+str(id))
     
-    
+    def selectAll(self):
+        self.cursor.execute("select * from location")
         
     def insertNewLocation(self,name,description,capacity,type):
         self.cursor.execute("insert into loaction (loaction_name,location_description.location_capacity,location_type) values (%s,%s,%s,%s)",[name,description,capacity,type])

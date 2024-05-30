@@ -14,12 +14,11 @@ from entity.user import User,SuperUser
 
 def create_private_event(request):
     try:
-        event_id_now=utils.return_current_event_id(1)
+        
 
         user = User({"id":request.id})
         data = json.loads(request.body.decode("utf-8"))
         temp_dict = {
-            "id":event_id_now,
             "creator_id":user.get(["id"]),
             "name":data["eventName"],
             "start_time":data["eventStartTime"],
