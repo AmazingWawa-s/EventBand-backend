@@ -60,12 +60,12 @@ class Event():
         dct=vars(self)
         sq="("
         for attr,value in dct.items():
-            if (value is not None) and (attr is not "id") and (attr is not "participants"):
+            if attr in self.available:
                 sq+=('event_'+attr+', ')
         sq=sq[:-2]
         sq+=") values ("
         for attr,value in dct.items():
-            if (value is not None) and (attr is not "id") and (attr is not "participants"):
+            if attr in self.available:
                 sq+=('"'+str(value)+'", ')
         sq=sq[:-2]  
         sq+=")"

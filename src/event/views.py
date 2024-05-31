@@ -10,7 +10,7 @@ from entity.user import User,SuperUser
 
 def create_private_event(request):
     try:
-        user = User({"id":request.id})
+        user = User(request.userid)
         data = json.loads(request.body.decode("utf-8"))
         temp_dict = {
             "creator_id":user.get(["id"]),
@@ -36,7 +36,7 @@ def load_user_page(request):
     
 
     try:
-        user = User({"id":request.id})
+        user = User(request.userid)
         data = json.loads(request.body.decode("utf-8"))
         result=user.get_all_locations()
         return JsonResponse({"code":1,"All_Locations":result})
@@ -49,7 +49,7 @@ def load_user_page(request):
 def get_created_events(request):
 
     try:
-        user = User({"id":request.id})
+        user = User(request.userid)
         result=user.get_created_event_id()
         return JsonResponse({"code":1, "data": [i["event_id"] for i in result]})
     except Exception as e:
@@ -58,7 +58,7 @@ def get_created_events(request):
 
 def get_participated_events(request):
     try:
-        user = User({"id":request.id})
+        user = User(request.userid)
         result=user.get_created_event_id()
         return JsonResponse({"code":1, "data": [i["event_id"] for i in result]})
     except Exception as e:
@@ -66,7 +66,7 @@ def get_participated_events(request):
 
 def delete_event(request):
     try:
-        user = User({"id":request.id})
+        user = User(request.userid)
         data = json.loads(request.body.decode("utf-8"))
         user.delete_event(data["event_id"])
         return JsonResponse({"code":1, "removeOk": True})

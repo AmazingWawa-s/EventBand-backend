@@ -12,8 +12,15 @@ urlpatterns = [
     path("register/", uv.register),
     path("changepwd/",uv.change_pwd),
     path("logoff/",uv.remove),
+    path("getlocations/",uv.get_all_locations),
+    path("deletelocation/",uv.delete_location),
+    path("createlocation/",uv.add_location),
+
     path("createevent/private/",ev.create_private_event),
-    path("userpage/",ev.load_user_page)
+    path("userpage/",ev.load_user_page),
+    path("getevents/created/",ev.get_created_events),
+    path("getevents/participated/",ev.get_participated_events),
+    path("deleteevent/",ev.delete_event)
 ]
 
 

@@ -11,10 +11,10 @@ from entity.db import EventDB,LocationDB
 
 
 current_event_id=0
-event_id_sema=1
+event_id_sema=Semaphore(1)
 
 current_location_id=0
-location_id_sema=1
+location_id_sema=Semaphore(1)
 def encoder(raw):
     md5 = hashlib.md5()
     md5.update(str(raw).encode("utf-8"))
@@ -38,6 +38,7 @@ def generatetoken(payload):
     
 #初始化current_event_id   
 def count_event():
+    print(5656)
     global current_event_id
     global event_id_sema
     try:
@@ -55,6 +56,7 @@ def count_event():
         return JsonResponse({"code":0,"msg":"countEventError:"+str(e)})
 def return_current_event_id(num):
     global current_event_id
+    global event_id_sema
     event_id_sema.P()
     temp=current_event_id
     current_event_id=current_event_id+num
@@ -62,6 +64,7 @@ def return_current_event_id(num):
     return temp
 #初始化current_location_id
 def count_location():
+    print(5555)
     global current_location_id
     global location_id_sema
     try:
@@ -76,10 +79,13 @@ def count_location():
     except Exception as e:
         return JsonResponse({"code":0,"msg":"countEventError:"+str(e)})
 def return_current_location_id(num):
+    print(666)
     global current_location_id
+    global location_id_sema
     location_id_sema.P()
     temp=current_location_id
     current_location_id=current_location_id+num
+    print(777)
     location_id_sema.V()
     return temp
     

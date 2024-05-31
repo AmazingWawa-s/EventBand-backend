@@ -8,7 +8,7 @@ from entity.db import UserDB,EventDB,LocationDB
 class User():
    
     def __init__(self,request):
-        self.available=["id","name","password"]
+        self.available=["id","name","password","authority"]
         if type(request) is int:
             self.name=""
             self.id=request
@@ -18,6 +18,7 @@ class User():
         elif type(request) is str:
             self.name=request
             self.id=-1
+            self.password=""
             self.getFromDBByName("*",self.name)  
         else:
             # 默认初始化
@@ -33,9 +34,7 @@ class User():
 
     def set(self,attr_dict):
         for attr,value in attr_dict.items():
-            if attr[5:] not in self.available:
-                raise ValueError("Not available from User")
-            elif attr[5:] in self.available:
+            if attr[5:] in self.available:
                 setattr(self,attr[5:],value)
         
     def getFromDBById(self,attrs,id):
@@ -50,7 +49,7 @@ class User():
         dbop=UserDB()
         dbop.selectByName(attrs,name)
         result=dbop.get()
-        
+        print(result)
         if len(result)==1:
             self.set(result[0])
         
@@ -64,7 +63,7 @@ class User():
         dct=vars(self)
         sq=""
         for attr,value in dct.items():
-            if value is not None and attr is not "id" and attr is not "available":
+            if attr in self.available:
                 sq+=('user_'+attr+'="'+str(value)+'", ')
         sq=sq[:-2]
 
@@ -76,11 +75,11 @@ class User():
 
     def get_created_event_id(self):
         dbop=EventDB()
-        dbop.selectEUByUserIdRole("event_id",self.id,1)
+        dbop.selectEUByUserIdRole("eurelation_event_id",self.id,1)
         return dbop.get()
     def get_participated_event_id(self):
         dbop=EventDB()
-        dbop.selectEUByUserIdRole("event_id",self.id,0)
+        dbop.selectEUByUserIdRole("eurelation_event_id",self.id,0)
         return dbop.get()
         
     def create_private_event(self,dit:dict):
@@ -96,15 +95,15 @@ class User():
         en_min=dit["end_time"]["minute"]
         en=en_hour*60+en_min
         dt=str(year)+"-"+str(month)+"-"+str(day)
-        edbop.checkCollision1(dt,star,en)
+        edbop.checkCollision1(dit["location"],dt,star,en)
         result=edbop.get()
         if len(result)>=1:
             return False
-        edbop.checkCollision2(dt,star,en)
+        edbop.checkCollision2(dit["location"],dt,star,en)
         result=edbop.get()
         if len(result)>=1:
             return False
-        edbop.checkCollision3(dt,star,en)
+        edbop.checkCollision3(dit["location"],dt,star,en)
         result=edbop.get()
         if len(result)>=1:
             return False
@@ -128,7 +127,7 @@ class User():
         
 
         
-        return temp_event
+        
     
     def create_public_event(self,event_dict:dict):
         temp_event = PublicEvent(-1,self.id)
@@ -169,7 +168,7 @@ class User():
 
 class SuperUser(User):
     def __init__(self,nid):
-        
+        self.authority=1
         super().__init__(nid)
 
     def __del__(self):
@@ -200,6 +199,10 @@ class SuperUser(User):
     
     def add_location(self,location_dict):
         new_location=Location(location_dict,-1)
+        
+        print(2222)
+        new_location.set({"location_id":utils.return_current_location_id(1)})
+        print(vars(new_location))
 
     def delete_location(self,location_id):
         dbop=LocationDB()
@@ -218,7 +221,7 @@ class NormalUser(User):
         super().__init__(nid)
 
     def __del__(self):
-        if self.id==-1:
+        if self.id==-1 and self.password!="":
             self.insertUser()
         elif self.id>=0:
             self.autoUpdate()
@@ -243,6 +246,7 @@ class NormalUser(User):
         if self.authority==0:
             raise ValueError("superuser can't be added")
         dbop=UserDB()
+
         dbop.insertNewUser(self.name,self.password)
 
     def get_created_event(self):

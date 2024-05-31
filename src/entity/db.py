@@ -23,14 +23,14 @@ class UserDB(DB):
     def selectById(self,attrs,id):
         self.cursor.execute("select "+ attrs +" from user where user_id ="+str(id))
     def selectByName(self,attrs,name):
-        self.cursor.execute("select * from event where user_name =%s",name)
+        self.cursor.execute("select * from user where user_name =%s",name)
     def select(self,attrs,nid):
         if type(nid) is int:
             self.cursor.execute("select "+ attrs +" from user where user_id ="+str(nid))
         elif type(nid) is str:
             self.cursor.execute("select "+ attrs +" from user where user_name ="+nid)
     def selectAll(self,attrs):
-        self.cursor.execute("select * from event where user_name =%s")
+        self.cursor.execute("select * from user where user_name =%s")
 
     def deleteUser(self,id):
         self.cursor.execute("delete from user where user_id=%s",id)
@@ -48,17 +48,17 @@ class EventDB(DB):
     def __init__(self):
         super().__init__()
     def checkCollision1(self,location,date,start,end):
-        self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id=%s,elrelation_start>=%s and elrelation_start<=%s",[date,location,start,end])
+        self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id=%s and elrelation_start>=%s and elrelation_start<=%s",[date,location,start,end])
     def checkCollision2(self,location,date,start,end):
-        self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id=%s,elrelation_end>=%s and elrelation_end<=%s",[date,location,start,end])
+        self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id=%s and elrelation_end>=%s and elrelation_end<=%s",[date,location,start,end])
     def checkCollision3(self,location,date,start,end):
-        self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id=%s,elrelation_start<=%s and elrelation_end>=%s",[date,location,start,end])
+        self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id=%s and elrelation_start<=%s and elrelation_end>=%s",[date,location,start,end])
     def selectById(self,attrs,id):
         self.cursor.execute("select "+ attrs +" from event_brief where event_id ="+str(id))
     def selectEUByUserIdRole(self,attrs,id,role):
-        self.cursor.execute("select distinct"+ attrs +" from eurelation where eurelation_user_id ="+str(id)+" and eurelation_role="+str(role))
+        self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_user_id ="+str(id)+" and eurelation_role="+str(role))
     def selectEUByEventId(self,attrs,id):
-        self.cursor.execute("select distinct"+ attrs +" from eurelation where eurelation_event_id ="+str(id))
+        self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_event_id ="+str(id))
     
     def insertEU(self,event_id,user_id,role):
         self.cursor.execute("insert into eurelation (eurelation_event_id,eurelation_user_id,eurelation_role) values(%s,%s,%s)",[event_id,user_id,role])
@@ -99,7 +99,7 @@ class LocationDB(DB):
         self.cursor.execute("select * from location")
         
     def insertNewLocation(self,lid,name,description,capacity,type):
-        self.cursor.execute("insert into loaction (location_id,loaction_name,location_description.location_capacity,location_type) values (%s,%s,%s,%s,%s)",[lid,name,description,capacity,type])
+        self.cursor.execute("insert into location (location_id,location_name,location_description,location_capacity,location_type) values (%s,%s,%s,%s,%s)",[lid,name,description,capacity,type])
         self.conn.commit()
     def updateLocation(self,id,toset):
         self.cursor.execute("update location set "+toset+" where location_id="+str(id))

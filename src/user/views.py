@@ -73,7 +73,9 @@ def change_pwd(request):
         new_password = utils.encoder(data["userNewPassword"])
         
         id = request.userid
+
         tUser=NormalUser(id)
+
         if new_password == tUser.get(["password"])[0]:
         # 新密码和原密码相同
             return JsonResponse({"code":1,"duplicatePassword":True})
@@ -102,6 +104,7 @@ def super_login(request):
         
         # 密码正确
         if sUser.get(["password"])[0] == encode_password:
+            print(sUser.get(["id"])[0])
             payload={
                 "userId":sUser.get(["id"])[0],
                 "my_exp":int(time.time())+EXPIRE_TIME
@@ -118,15 +121,30 @@ def super_login(request):
 
 def get_all_locations(request):
     try:
-        user = User({"id":request.id})
+        user = SuperUser(request.userid)
         result=user.get_all_locations()
         return JsonResponse({"code":1,"data":result})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"getAllLocationsError:"+str(e)})
-    
+
+def add_location(request):
+    try:
+        user = SuperUser(request.userid)
+        data = json.loads(request.body.decode("utf-8"))
+        location_dict={
+            "location_name":data["locationName"],
+            "location_description":data["locationDescription"],
+            "location_capacity":data["locationCapacity"],
+            "location_type":data["locationType"],
+        }
+        user.add_location(location_dict)
+        return JsonResponse({"code":1,"addLocationOk":True})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"addLocationError:"+str(e)})
+
 def delete_location(request):
     try:
-        user = User({"id":request.id})
+        user = SuperUser(request.userid)
         data = json.loads(request.body.decode("utf-8"))
         user.delete_location(data["eventId"])
         return JsonResponse({"code":1,"removeOk":True})
