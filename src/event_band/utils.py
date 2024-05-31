@@ -48,7 +48,7 @@ def count_event():
         event_id_sema=Semaphore(1)
         
         if len(result)>0:
-            current_event_id=result[0][0]+1
+            current_event_id=result[0]["event_id"]+1
             
         else: 
             current_event_id=1
@@ -68,11 +68,13 @@ def count_location():
     global location_id_sema
     try:
         dbop=LocationDB()
-        dbop.getLastEventId()
+        dbop.getLastLocationId()
         result=dbop.get()
         location_id_sema=Semaphore(1)
         if len(result)>0:
-            current_location_id=result[0][0]+1    
+            print(3)
+            current_location_id=result[0]["location_id"]+1
+            print(4)    
         else: 
             current_location_id=1
         print(current_location_id)

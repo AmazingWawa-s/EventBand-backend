@@ -10,12 +10,12 @@ class Event():
         self.end_time=0
         self.start_date:str=""
         self.end_date:str=""
-        self.location = -1
+        self.location_id = -1
         self.description=""
         self.participants:list = []
         self.type=""
 
-        self.available=["id","creator_id","name","start","end","location","description","type"]
+        self.available=["id","creator_id","name","start","end","location_id","description","type"]
 
         if event_id == -1:
             # 创建

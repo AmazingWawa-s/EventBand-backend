@@ -19,7 +19,7 @@ def create_private_event(request):
             "end_time":data["eventEndTime"],
             "start_date":data["eventStartDate"],
             "end_date":data["eventEndDate"],
-            "location":data["eventLocation"],
+            "location_id":data["eventLocationId"],
             "description":data["eventDescription"],
         }
         s=user.create_private_event(temp_dict)
