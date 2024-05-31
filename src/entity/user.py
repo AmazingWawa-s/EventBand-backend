@@ -49,7 +49,6 @@ class User():
         dbop=UserDB()
         dbop.selectByName(attrs,name)
         result=dbop.get()
-        print(result)
         if len(result)==1:
             self.set(result[0])
         
@@ -110,7 +109,7 @@ class User():
         else :
             temp_event = PrivateEvent(-1)
             tid=utils.return_current_event_id(1)
-            temp_event.set(self,{"event_id":tid,"event_name":dit["name"],"event_start":dt+":"+str(star),"event_end":dt+":"+str(en),"event_location":dit["location"],"event_description":dit["description"],"event_type":1,"event_creator_id":self.id})
+            temp_event.set({"event_id":tid,"event_name":dit["name"],"event_start":dt+":"+str(star),"event_end":dt+":"+str(en),"event_location":dit["location"],"event_description":dit["description"],"event_type":1,"event_creator_id":self.id})
             edbop.insertEU(temp_event.get(["id"])[0],self.id,1)
             edbop.insertEL(temp_event.get(["id"])[0],dit["location"],dt,star,en)
             return True
@@ -200,9 +199,7 @@ class SuperUser(User):
     def add_location(self,location_dict):
         new_location=Location(location_dict,-1)
         
-        print(2222)
         new_location.set({"location_id":utils.return_current_location_id(1)})
-        print(vars(new_location))
 
     def delete_location(self,location_id):
         dbop=LocationDB()

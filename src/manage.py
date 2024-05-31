@@ -20,6 +20,4 @@ def main():
 
 
 if __name__ == "__main__":
-    utils.count_event()
-    utils.count_location()
     main()

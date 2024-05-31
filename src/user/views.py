@@ -104,7 +104,6 @@ def super_login(request):
         
         # 密码正确
         if sUser.get(["password"])[0] == encode_password:
-            print(sUser.get(["id"])[0])
             payload={
                 "userId":sUser.get(["id"])[0],
                 "my_exp":int(time.time())+EXPIRE_TIME

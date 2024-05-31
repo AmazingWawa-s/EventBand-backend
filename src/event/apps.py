@@ -6,7 +6,7 @@ class EventConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "event"
     def ready(self):
-        count_event()
+        count_event() 
         count_location()
 # your_app/apps.py
  

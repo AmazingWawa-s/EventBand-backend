@@ -34,7 +34,6 @@ class Location():
         return [getattr(self,attr) for attr in attr_list]
 
     def set(self,attr_dict):
-        print(1111)
         for attr,value in attr_dict.items():
             if attr[9:] not in self.available:
                 raise ValueError("Not available from Location")

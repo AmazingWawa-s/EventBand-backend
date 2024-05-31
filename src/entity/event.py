@@ -17,7 +17,6 @@ class Event():
 
         self.available=["id","creator_id","name","start","end","location","description","type"]
 
-
         if event_id == -1:
             # 创建
             self.state="create"
@@ -69,7 +68,7 @@ class Event():
                 sq+=('"'+str(value)+'", ')
         sq=sq[:-2]  
         sq+=")"
-        dbop.insertEvent(self.id,sq)
+        dbop.insertEvent(sq)
 
 
 
@@ -94,8 +93,8 @@ class Event():
 
 class PrivateEvent(Event):
     def __init__(self,event_id):
-        super().__init__(self,event_id)
-        self.type="private"
+        super().__init__(event_id)
+        self.type=0     # 私有
 
     def to_dict(self) -> dict:
         # 前端接口
@@ -107,6 +106,6 @@ class PrivateEvent(Event):
  
 class PublicEvent(Event):
     def __init__(self,id):
-        super().__init__(self,id)
-        self.type="public"
+        super().__init__(id)
+        self.type=1    # 公有
  

@@ -38,7 +38,7 @@ def generatetoken(payload):
     
 #初始化current_event_id   
 def count_event():
-    print(5656)
+    print(5656) 
     global current_event_id
     global event_id_sema
     try:
@@ -64,7 +64,6 @@ def return_current_event_id(num):
     return temp
 #初始化current_location_id
 def count_location():
-    print(5555)
     global current_location_id
     global location_id_sema
     try:
@@ -76,16 +75,15 @@ def count_location():
             current_location_id=result[0][0]+1    
         else: 
             current_location_id=1
-    except Exception as e:
+        print(current_location_id)
+    except Exception as e: 
         return JsonResponse({"code":0,"msg":"countEventError:"+str(e)})
 def return_current_location_id(num):
-    print(666)
     global current_location_id
     global location_id_sema
     location_id_sema.P()
     temp=current_location_id
     current_location_id=current_location_id+num
-    print(777)
     location_id_sema.V()
     return temp
     
