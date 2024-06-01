@@ -75,6 +75,7 @@ class User():
     def get_created_event_id(self):
         dbop=EventDB()
         dbop.selectEUByUserIdRole("eurelation_event_id",self.id,1)
+        
         return dbop.get()
     def get_participated_event_id(self):
         dbop=EventDB()
@@ -94,24 +95,24 @@ class User():
         en_min=dit["end_time"]["minute"]
         en=en_hour*60+en_min
         dt=str(year)+"-"+str(month)+"-"+str(day)
-        edbop.checkCollision1(dit["location"],dt,star,en)
+        edbop.checkCollision1(dit["location_id"],dt,star,en)
         result=edbop.get()
         if len(result)>=1:
             return False
-        edbop.checkCollision2(dit["location"],dt,star,en)
+        edbop.checkCollision2(dit["location_id"],dt,star,en)
         result=edbop.get()
         if len(result)>=1:
             return False
-        edbop.checkCollision3(dit["location"],dt,star,en)
+        edbop.checkCollision3(dit["location_id"],dt,star,en)
         result=edbop.get()
         if len(result)>=1:
             return False
         else :
             temp_event = PrivateEvent(-1)
             tid=utils.return_current_event_id(1)
-            temp_event.set({"event_id":tid,"event_name":dit["name"],"event_start":dt+":"+str(star),"event_end":dt+":"+str(en),"event_location":dit["location"],"event_description":dit["description"],"event_type":1,"event_creator_id":self.id})
+            temp_event.set({"event_id":tid,"event_name":dit["name"],"event_start":dt+":"+str(star),"event_end":dt+":"+str(en),"event_location":dit["location_id"],"event_description":dit["description"],"event_type":1,"event_creator_id":self.id})
             edbop.insertEU(temp_event.get(["id"])[0],self.id,1)
-            edbop.insertEL(temp_event.get(["id"])[0],dit["location"],dt,star,en)
+            edbop.insertEL(temp_event.get(["id"])[0],dit["location_id"],dt,star,en)
             return True
             
             
@@ -146,11 +147,18 @@ class User():
         return temp_event  
     
     def delete_event(self,event_id):
+        dbop=EventDB()
+        dbop.selectById("*",event_id)
+        result=dbop.get()
+
+        if len(result)==0:
+            raise ValueError("Event Id not exist")
         if event_id not in self.created_event_id:
             raise ValueError("Only creator can delete event")
         
-        dbop=EventDB()
+        
         dbop.deleteEUByEventId(event_id)
+        dbop.deleteEventById(event_id)
 
     def update_event(self):
         pass
@@ -187,14 +195,9 @@ class SuperUser(User):
         pass
     
     def get_all_events(self,cursor):
-        event_list=[]
-        result = cursor.execute("select * from event")
-        for i in result:
-            temp_event = Event(-1)
-            # 从数据库获取数据后，创建活动对象
-            temp_event.set()
-            event_list.append(temp_event)
-        return event_list
+        dbop=EventDB()
+        dbop.selectAll()
+        return dbop.get()
     
     def add_location(self,location_dict):
         new_location=Location(location_dict,-1)
@@ -203,7 +206,7 @@ class SuperUser(User):
 
     def delete_location(self,location_id):
         dbop=LocationDB()
-        dbop.deleteLocation(location_id)
+        dbop.deleteLocationById(location_id)
     def update_location(self,location_dict,location_id):
         temp_location=Location(None,location_id)
         temp_location.set(location_dict)

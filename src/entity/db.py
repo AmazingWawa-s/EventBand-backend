@@ -53,6 +53,8 @@ class EventDB(DB):
         self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id=%s and elrelation_end>=%s and elrelation_end<=%s",[date,location,start,end])
     def checkCollision3(self,location,date,start,end):
         self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id=%s and elrelation_start<=%s and elrelation_end>=%s",[date,location,start,end])
+    def selectAll(self):
+        self.cursor.execute("select * from event_brief")
     def selectById(self,attrs,id):
         self.cursor.execute("select "+ attrs +" from event_brief where event_id ="+str(id))
     def selectEUByUserIdRole(self,attrs,id,role):
@@ -68,6 +70,7 @@ class EventDB(DB):
         self.conn.commit()
     def insertEL(self,event_id,location_id,date,start,end):
         self.cursor.execute("insert into elrelation (elrelation_event_id,elrelation_location_id,elrelation_date,elrelation_start,elrelation_end) values(%s,%s,%s,%s,%s)",[event_id,location_id,date,start,end])
+        self.conn.commit()
     # def delete(self,id):
     #     self.cursor.execute("delete from user where user_id=%s",id)
     #     self.conn.commit()

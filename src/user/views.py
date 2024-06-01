@@ -145,7 +145,7 @@ def delete_location(request):
     try:
         user = SuperUser(request.userid)
         data = json.loads(request.body.decode("utf-8"))
-        user.delete_location(data["eventId"])
+        user.delete_location(data["locationId"])
         return JsonResponse({"code":1,"removeOk":True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"deleteLocationError:"+str(e)})

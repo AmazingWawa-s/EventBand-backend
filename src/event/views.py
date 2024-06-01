@@ -44,14 +44,30 @@ def load_user_page(request):
     except Exception as e:
         return JsonResponse({"code":0,"msg":"loadUserPageError"+str(e)})
     
+def get_all_events(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        if "userAuthority" not in data:
+            raise ValueError("no authority error")
+        sUser = SuperUser(request.id)
+        if data["userAuthority"] !=0 or sUser.get(["authority"])[0]!=0:
+            return JsonResponse({"code":1,"isSuperUser":False}) 
 
+        su=SuperUser(request.id)
+        result=su.get_all_events()
+    except:
+        pass
 
 def get_created_events(request):
 
     try:
         user = User(request.userid)
         result=user.get_created_event_id()
-        return JsonResponse({"code":1, "data": [i["event_id"] for i in result]})
+        print(result)
+        if len(result)==0:
+            return JsonResponse({"code":1, "have_no_created_event": True})
+        
+        return JsonResponse({"code":1, "data": [i["eurelation_event_id"] for i in result]})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"getCreatedEventsError:"+str(e)})
     
@@ -59,8 +75,11 @@ def get_created_events(request):
 def get_participated_events(request):
     try:
         user = User(request.userid)
-        result=user.get_created_event_id()
-        return JsonResponse({"code":1, "data": [i["event_id"] for i in result]})
+        result=user.get_participated_event_id()
+        if len(result)==0:
+            return JsonResponse({"code":1, "have_no_participated_event": True})
+        
+        return JsonResponse({"code":1, "data": [i["eurelation_event_id"] for i in result]})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"getParticipatedEventsError:"+str(e)})
 
@@ -68,7 +87,7 @@ def delete_event(request):
     try:
         user = User(request.userid)
         data = json.loads(request.body.decode("utf-8"))
-        user.delete_event(data["event_id"])
+        user.delete_event(data["eventId"])
         return JsonResponse({"code":1, "removeOk": True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"deleteEventError:"+str(e)})
