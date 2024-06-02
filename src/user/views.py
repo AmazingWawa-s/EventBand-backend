@@ -115,9 +115,9 @@ def super_login(request):
 
 def get_all_locations(request):
     try:
-        user = SuperUser(request.userid)
+        user = User(request.userid)
         result=user.get_all_locations()
-        return JsonResponse({"code":1,"data":result})
+        return JsonResponse({"code":1,"data":[i.to_dict() for i in result]})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"getAllLocationsError:"+str(e)})
 

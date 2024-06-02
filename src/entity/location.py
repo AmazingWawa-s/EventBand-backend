@@ -7,7 +7,7 @@ class Location():
             self.set(dict)
         else:
             self.state="update"
-            self.getFromDB("*",self.id)
+            self.getFromDB("*",id)
     
     def __del__(self):
         if self.state=="create":
@@ -56,6 +56,16 @@ class Location():
     def deletelocation(self):
         dbop=LocationDB()
         dbop.deleteLocationById(self.id)
+
+
+    def to_dict(self) -> dict:
+        # 前端接口
+        result_dict = {}
+        for key,value in vars(self).items():
+            if key in self.available:
+                result_dict[key]=value
+
+        return result_dict
     
         
         

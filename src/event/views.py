@@ -48,7 +48,7 @@ def get_all_events(request):
     try:
         su=SuperUser(request.userid)
         result=su.get_all_events()
-        return JsonResponse({"code":1,"data":result}) 
+        return JsonResponse({"code":1,"data":[i.to_dict() for i in result]}) 
     except Exception as e:
         return JsonResponse({"code":0,"msg":"getAllEventsError"+str(e)})
 

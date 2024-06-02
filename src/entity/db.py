@@ -53,8 +53,8 @@ class EventDB(DB):
         self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id=%s and elrelation_end>=%s and elrelation_end<=%s",[date,location,start,end])
     def checkCollision3(self,location,date,start,end):
         self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id=%s and elrelation_start<=%s and elrelation_end>=%s",[date,location,start,end])
-    def selectAll(self):
-        self.cursor.execute("select * from event_brief")
+    def selectAll(self,attrs):
+        self.cursor.execute("select "+attrs+" from event_brief")
     def selectById(self,attrs,id):
         self.cursor.execute("select "+ attrs +" from event_brief where event_id ="+str(id))
     def selectByIds(self,attrs,ids):
@@ -100,8 +100,8 @@ class LocationDB(DB):
     def selectLocationById(self,attrs,id):
         self.cursor.execute("select "+ attrs +" from location where location_id ="+str(id))
     
-    def selectAllLocations(self):
-        self.cursor.execute("select * from location")
+    def selectAllLocations(self,attrs):
+        self.cursor.execute("select "+attrs+" from location")
         
     def insertNewLocation(self,lid,name,description,capacity,type):
         self.cursor.execute("insert into location (location_id,location_name,location_description,location_capacity,location_type) values (%s,%s,%s,%s,%s)",[lid,name,description,capacity,type])

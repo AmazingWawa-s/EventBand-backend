@@ -48,10 +48,10 @@ class Event():
         if len(result)==1:
             self.set(result[0])
         # 获取参加者id
-        dbop.selectEUByEventId("user_id",self.id)
+        dbop.selectEUByEventId("eurelation_user_id",self.id)
         result=dbop.get()
         for i in result:
-            participant_id=i["user_id"]
+            participant_id=i["eurelation_user_id"]
             self.participants.append(participant_id)
 
     def insertEvent(self):
@@ -87,9 +87,19 @@ class Event():
         #     dbop.insertEU(self.id, i, 0)
 
 
-    def invite(self):
-        pass
+    def invite(self,ids):
+        for id in ids:
+            self.participants.append(id)
 
+
+    def to_dict(self) -> dict:
+        # 前端接口
+        result_dict = {}
+        for key,value in vars(self).items():
+            if key in self.available:
+                result_dict[key]=value
+
+        return result_dict
 
 
 
