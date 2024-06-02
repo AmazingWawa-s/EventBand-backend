@@ -6,16 +6,21 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
+    #user
     path("admin/", admin.site.urls),
     path("login/", uv.login),
-    path("superlogin/",uv.super_login),
     path("register/", uv.register),
     path("changepwd/",uv.change_pwd),
     path("logoff/",uv.remove),
     path("getlocations/",uv.get_all_locations),
+
+    # su
+    path("superlogin/",uv.super_login),
     path("deletelocation/",uv.delete_location),
     path("createlocation/",uv.add_location),
+    path("getallevents/",ev.get_all_events),
 
+    # event
     path("createevent/private/",ev.create_private_event),
     path("userpage/",ev.load_user_page),
     path("getevents/created/",ev.get_created_events),

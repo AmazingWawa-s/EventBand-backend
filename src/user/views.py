@@ -88,12 +88,7 @@ def change_pwd(request):
 def super_login(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
-        if "userAuthority" not in data:
-            raise ValueError("no authority error")
         sUser = SuperUser(data["userName"])
-        if data["userAuthority"] !=0 or sUser.get(["authority"])[0]!=0:
-            return JsonResponse({"code":1,"isSuperUser":False}) 
-        
         
         # 输入的用户名不存在时返回错误
         if sUser.get(["id"])[0]==-1:

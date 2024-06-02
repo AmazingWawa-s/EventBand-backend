@@ -55,8 +55,9 @@ def get_all_events(request):
 
         su=SuperUser(request.id)
         result=su.get_all_events()
-    except:
-        pass
+        return JsonResponse({"code":1,"data":result}) 
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"getAllEventsError"+str(e)})
 
 def get_created_events(request):
 

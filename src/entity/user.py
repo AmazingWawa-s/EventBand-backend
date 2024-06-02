@@ -175,8 +175,14 @@ class User():
 
 class SuperUser(User):
     def __init__(self,nid):
-        self.authority=1
         super().__init__(nid)
+        if "authority" not in vars(self).keys():
+            raise ValueError("expected authority")
+        
+        if self.authority != 1:
+            raise ValueError("not superuser")
+
+
 
     def __del__(self):
         if self.authority!=0:
