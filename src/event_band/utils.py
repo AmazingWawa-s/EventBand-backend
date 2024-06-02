@@ -72,9 +72,7 @@ def count_location():
         result=dbop.get()
         location_id_sema=Semaphore(1)
         if len(result)>0:
-            print(3)
-            current_location_id=result[0]["location_id"]+1
-            print(4)    
+            current_location_id=result[0]["location_id"]+1    
         else: 
             current_location_id=1
         print(current_location_id)

@@ -6,15 +6,15 @@ import event_band.utils as utils
 
 from entity.db import UserDB,EventDB,LocationDB
 class User():
-   
+#初始化函数---------------------------------
     def __init__(self,request):
-        self.available=["id","name","password","authority"]
+        self.available=["id","name","password","authority"]#允许被保存到数据库中的属性
         if type(request) is int:
             self.name=""
             self.id=request
-            self.getFromDBById("*",self.id) 
-            self.created_event_id=[i["eurelation_event_id"] for i in self.get_created_event_id()]
-            self.participated_event_id=[i["eurelation_event_id"] for i in self.get_participated_event_id()]
+            self.getFromDBById("*",self.id)
+            self.created_event_id=[i["eurelation_event_id"] for i in self.get_created_event_id()]#该用户创建的活动
+            self.participated_event_id=[i["eurelation_event_id"] for i in self.get_participated_event_id()]#该用户参加的活动
         elif type(request) is str:
             self.name=request
             self.id=-1
@@ -26,6 +26,10 @@ class User():
             self.name=""
             self.password=""
             raise ValueError("class User initialize unexpected")
+        
+#析构函数-----------------------------------      
+    def __del__(self):
+        pass
         
     
     
@@ -68,9 +72,6 @@ class User():
 
         dbop.updateUser(self.id,sq)
             
-        
-    def __del__(self):
-        pass
 
     def get_created_event_id(self):
         dbop=EventDB()
