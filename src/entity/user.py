@@ -13,8 +13,8 @@ class User():
             self.name=""
             self.id=request
             self.getFromDBById("*",self.id) 
-            self.created_event_id=[i["eurelation_event_id"] for i in self.get_created_event_id()]
-            self.participated_event_id=[i["eurelation_event_id"] for i in self.get_participated_event_id()]
+            self.created_event_id=[i["event_id"] for i in self.get_created_event()]
+            self.participated_event_id=[i["event_id"] for i in self.get_participated_event()]
         elif type(request) is str:
             self.name=request
             self.id=-1
@@ -72,14 +72,42 @@ class User():
     def __del__(self):
         pass
 
-    def get_created_event_id(self):
+    def get_created_event(self):
         dbop=EventDB()
         dbop.selectEUByUserIdRole("eurelation_event_id",self.id,1)
-        
+        event_ids=dbop.get()
+        if len(event_ids)==0:
+            return []
+
+        ids=""
+        for i in event_ids:
+            ids+='"'
+            ids+=str(i["eurelation_event_id"])
+            ids+='", '
+        ids=ids[:-2]
+
+        dbop.selectByIds("*",ids)
+        result=dbop.get()
+        for i in result:
+            dbop.
+
         return dbop.get()
-    def get_participated_event_id(self):
+    
+    def get_participated_event(self):
         dbop=EventDB()
         dbop.selectEUByUserIdRole("eurelation_event_id",self.id,0)
+        event_ids=dbop.get()
+        if len(event_ids)==0:
+            return []
+
+        ids=""
+        for i in event_ids:
+            ids+='"'
+            ids+=str(i["eurelation_event_id"])
+            ids+='", '
+        ids=ids[:-2]
+
+        dbop.selectByIds("*",ids)
         return dbop.get()
         
     def create_private_event(self,dit:dict):
@@ -179,7 +207,7 @@ class SuperUser(User):
         if "authority" not in vars(self).keys():
             raise ValueError("expected authority")
         
-        if self.authority != 1:
+        if self.authority != 0:
             raise ValueError("not superuser")
 
 
@@ -200,7 +228,7 @@ class SuperUser(User):
         # 活动审核
         pass
     
-    def get_all_events(self,cursor):
+    def get_all_events(self):
         dbop=EventDB()
         dbop.selectAll()
         return dbop.get()
@@ -244,10 +272,6 @@ class NormalUser(User):
             raise ValueError("superuser can't change password")
         self.password=newPassword
         
-
-    
-
-
     def insertUser(self):
         if self.authority==0:
             raise ValueError("superuser can't be added")
@@ -255,11 +279,8 @@ class NormalUser(User):
 
         dbop.insertNewUser(self.name,self.password)
 
-    def get_created_event(self):
-        pass
+    def get_all_normal_users(self)
 
-    def get_participated_event(self):
-        pass
 
     def sign_up_event(self):
         # 报名活动

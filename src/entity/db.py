@@ -57,6 +57,8 @@ class EventDB(DB):
         self.cursor.execute("select * from event_brief")
     def selectById(self,attrs,id):
         self.cursor.execute("select "+ attrs +" from event_brief where event_id ="+str(id))
+    def selectByIds(self,attrs,ids):
+        self.cursor.execute("select "+ attrs +" from event_brief where event_id in (" + ids + ")")
     def selectEUByUserIdRole(self,attrs,id,role):
         self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_user_id ="+str(id)+" and eurelation_role="+str(role))
     def selectEUByEventId(self,attrs,id):

@@ -87,6 +87,10 @@ class Event():
         #     dbop.insertEU(self.id, i, 0)
 
 
+    def invite(self):
+        pass
+
+
 
 
 

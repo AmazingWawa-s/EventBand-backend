@@ -38,7 +38,6 @@ def generatetoken(payload):
     
 #初始化current_event_id   
 def count_event():
-    print(5656) 
     global current_event_id
     global event_id_sema
     try:
@@ -72,12 +71,9 @@ def count_location():
         result=dbop.get()
         location_id_sema=Semaphore(1)
         if len(result)>0:
-            print(3)
             current_location_id=result[0]["location_id"]+1
-            print(4)    
         else: 
             current_location_id=1
-        print(current_location_id)
     except Exception as e: 
         return JsonResponse({"code":0,"msg":"countEventError:"+str(e)})
 def return_current_location_id(num):
