@@ -46,14 +46,7 @@ def load_user_page(request):
     
 def get_all_events(request):
     try:
-        data = json.loads(request.body.decode("utf-8"))
-        if "userAuthority" not in data:
-            raise ValueError("no authority error")
-        sUser = SuperUser(request.id)
-        if data["userAuthority"] !=0 or sUser.get(["authority"])[0]!=0:
-            return JsonResponse({"code":1,"isSuperUser":False}) 
-
-        su=SuperUser(request.id)
+        su=SuperUser(request.userid)
         result=su.get_all_events()
         return JsonResponse({"code":1,"data":result}) 
     except Exception as e:
@@ -63,12 +56,11 @@ def get_created_events(request):
 
     try:
         user = User(request.userid)
-        result=user.get_created_event_id()
-        print(result)
+        result=user.get_created_event()
         if len(result)==0:
             return JsonResponse({"code":1, "have_no_created_event": True})
         
-        return JsonResponse({"code":1, "data": [i["eurelation_event_id"] for i in result]})
+        return JsonResponse({"code":1, "data": result})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"getCreatedEventsError:"+str(e)})
     
@@ -76,11 +68,11 @@ def get_created_events(request):
 def get_participated_events(request):
     try:
         user = User(request.userid)
-        result=user.get_participated_event_id()
+        result=user.get_participated_event()
         if len(result)==0:
             return JsonResponse({"code":1, "have_no_participated_event": True})
         
-        return JsonResponse({"code":1, "data": [i["eurelation_event_id"] for i in result]})
+        return JsonResponse({"code":1, "data": result})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"getParticipatedEventsError:"+str(e)})
 
