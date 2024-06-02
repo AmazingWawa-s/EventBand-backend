@@ -13,8 +13,8 @@ class User():
             self.name=""
             self.id=request
             self.getFromDBById("*",self.id)
-            self.created_event_id=[i["eurelation_event_id"] for i in self.get_created_event_id()]#该用户创建的活动
-            self.participated_event_id=[i["eurelation_event_id"] for i in self.get_participated_event_id()]#该用户参加的活动
+            self.created_event_id=[i["eurelation_event_id"] for i in self.get_created_event()]#该用户创建的活动
+            self.participated_event_id=[i["eurelation_event_id"] for i in self.get_participated_event()]#该用户参加的活动
         elif type(request) is str:
             self.name=request
             self.id=-1
