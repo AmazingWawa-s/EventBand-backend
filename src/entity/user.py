@@ -89,7 +89,7 @@ class User():
         dbop.selectByIds("*",ids)
         result=dbop.get()
         for i in result:
-            dbop.
+            pass
 
         return dbop.get()
     
@@ -279,7 +279,8 @@ class NormalUser(User):
 
         dbop.insertNewUser(self.name,self.password)
 
-    def get_all_normal_users(self)
+    def get_all_normal_users(self):
+        pass
 
 
     def sign_up_event(self):
