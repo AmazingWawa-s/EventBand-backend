@@ -19,6 +19,7 @@ class AuthorizeMiddleware(MiddlewareMixin):
     def process_request(self, request):
         try:
             if not any(api in request.path for api in API_WHITELIST):
+
                 # if request.path not in API_WHITELIST:
                 # 从请求头中获取 username 和 token
                 data = json.loads(request.body.decode("utf-8"))

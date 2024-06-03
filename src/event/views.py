@@ -33,17 +33,25 @@ def create_private_event(request):
 
 
 def load_user_page(request):
-    
-
     try:
         user = User(request.userid)
-        data = json.loads(request.body.decode("utf-8"))
-        result=user.get_all_locations()
-        return JsonResponse({"code":1,"All_Locations":result})
-        
+        result_created=user.get_created_event()
+        # if len(result1)==0:
+        #     return JsonResponse({"code":1, "have_no_created_event": True})
+        result_participated=user.get_participated_event()
+        # if len(result2)==0:
+        #     return JsonResponse({"code":1, "have_no_participated_event": True})
+        result_locations=[i.to_dict() for i in user.get_all_locations()]
+
+        result={}
+        result["created"]=result_created
+        result["participated"]=result_participated
+        result["locationList"]=result_locations
+        return JsonResponse({"code":1, "data": result})
     except Exception as e:
-        return JsonResponse({"code":0,"msg":"loadUserPageError"+str(e)})
+        return JsonResponse({"code":0,"msg":"loadUserPageError:"+str(e)})
     
+
 def get_all_events(request):
     try:
         su=SuperUser(request.userid)
@@ -85,3 +93,5 @@ def delete_event(request):
     except Exception as e:
         return JsonResponse({"code":0,"msg":"deleteEventError:"+str(e)})
     
+def share_event():
+    pass

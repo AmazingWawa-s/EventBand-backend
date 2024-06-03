@@ -13,6 +13,7 @@ urlpatterns = [
     path("changepwd/",uv.change_pwd),
     path("logoff/",uv.remove),
     path("getlocations/",uv.get_all_locations),
+    path("loaduserpage/",ev.load_user_page),
 
     # su
     path("superlogin/",uv.super_login),
