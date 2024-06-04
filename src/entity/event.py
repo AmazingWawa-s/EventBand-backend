@@ -111,8 +111,8 @@ class Event():
 
 
 class PrivateEvent(Event):
-    def __init__(self,event_id):
-        super().__init__(event_id)
+    def __init__(self,event_id,state):
+        super().__init__(event_id,state)
         self.type=0     # 私有
 
     def to_dict(self) -> dict:
@@ -126,7 +126,7 @@ class PrivateEvent(Event):
  
  
 class PublicEvent(Event):
-    def __init__(self,id):
-        super().__init__(id)
+    def __init__(self,id,state):
+        super().__init__(id,state)
         self.type=1    # 公有
  

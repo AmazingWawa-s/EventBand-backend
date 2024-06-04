@@ -132,7 +132,10 @@ def add_location(request):
             "location_capacity":data["locationCapacity"],
             "location_type":data["locationType"],
         }
-        user.add_location(location_dict)
+        result=user.add_location(location_dict)
+        if result is None:
+            return JsonResponse({"code":1,"NameDuplicated":True,"addLocationOk":False})
+        
         return JsonResponse({"code":1,"addLocationOk":True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"addLocationError:"+str(e)})

@@ -41,7 +41,7 @@ def load_user_page(request):
         result_participated=user.get_participated_event()
         # if len(result2)==0:
         #     return JsonResponse({"code":1, "have_no_participated_event": True})
-        result_locations=[i.to_dict() for i in user.get_all_locations()]
+        result_locations=user.get_all_locations()
 
         result={}
         result["created"]=result_created
