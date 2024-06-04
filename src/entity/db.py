@@ -57,8 +57,8 @@ class EventDB(DB):
         self.cursor.execute("select "+attrs+" from event_brief")
     def selectById(self,attrs,id):
         self.cursor.execute("select "+ attrs +" from event_brief where event_id ="+str(id))
-    def selectByIds(self,attrs,ids):
-        self.cursor.execute("select "+ attrs +" from event_brief where event_id in (" + ids + ")")
+    def selectByIdsJoinLocation(self,ids):
+        self.cursor.execute("select eb.*,lo.location_firstname,lo.location_name from event_brief eb left join location lo on eb.event_location_id=lo.location_id where event_id in (" + ids + ")")
     def selectEUByUserIdRole(self,attrs,id,role):
         self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_user_id ="+str(id)+" and eurelation_role="+str(role))
     def selectEUByEventId(self,attrs,id):
@@ -101,7 +101,7 @@ class LocationDB(DB):
         self.cursor.execute("select "+ attrs +" from location where location_id ="+str(id))
     
     def selectAllLocations(self,attrs):
-        self.cursor.execute("select "+attrs+" from location")
+        self.cursor.execute("select "+attrs+" from location order by location_firstname,location_name")
         
     def insertNewLocation(self,lid,firstname,name,description,capacity,type):
         self.cursor.execute("insert into location (location_id,location_firstname,location_name,location_description,location_capacity,location_type) values (%s,%s,%s,%s,%s,%s)",[lid,firstname,name,description,capacity,type])
@@ -116,3 +116,6 @@ class LocationDB(DB):
         self.cursor.execute("delete from location where location_id=%s",id)
         self.cursor.execute("delete from elrelation where elrelation_location_id=%s",id)
         self.conn.commit()
+    def selectLocationByFullName(self,attrs,firstname,name):
+        self.cursor.execute("select "+attrs+' from location where location_firstname="'+str(firstname)+'" and location_name="'+str(name)+'"')
+    

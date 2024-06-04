@@ -85,7 +85,7 @@ class User():
             ids+=str(i["eurelation_event_id"])
             ids+='", '
         ids=ids[:-2]
-        dbop.selectByIds("*",ids)
+        dbop.selectByIdsJoinLocation(ids)
         result=dbop.get()
         for i in result:
             pass
@@ -105,7 +105,7 @@ class User():
             ids+='", '
         ids=ids[:-2]
 
-        dbop.selectByIds("*",ids)
+        dbop.selectByIdsJoinLocation(ids)
         return dbop.get()
         
     def create_private_event(self,dit:dict):
@@ -270,9 +270,13 @@ class SuperUser(User):
         return [Event(i["event_id"],"select") for i in ids]
     
     def add_location(self,location_dict):
+        dbop=LocationDB()
+        dbop.selectLocationByFullName("location_id",location_dict["location_firstname"],location_dict["location_name"])
+        if len(dbop.get())>0:
+            return None
         new_location=Location(location_dict,-1)
-        
         new_location.set({"location_id":utils.return_current_location_id(1)})
+        return new_location
 
     def delete_location(self,location_id):
         dbop=LocationDB()
