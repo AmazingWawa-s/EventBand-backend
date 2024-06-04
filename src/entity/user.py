@@ -134,7 +134,7 @@ class User():
         if len(result)>=1:
             return False
         else :
-            temp_event = PrivateEvent(-1)
+            temp_event = PrivateEvent(-1,"create")
             tid=utils.return_current_event_id(1)
             temp_event.set({"event_id":tid,"event_name":dit["name"],"event_start":dt+":"+str(star),"event_end":dt+":"+str(en),"event_location_id":dit["location_id"],"event_description":dit["description"],"event_type":1,"event_creator_id":self.id})
             edbop.insertEU(temp_event.get(["id"])[0],self.id,1)
@@ -267,7 +267,7 @@ class SuperUser(User):
         dbop=EventDB()
         dbop.selectAll("event_id")
         ids=dbop.get()
-        return [Event(i["event_id"]) for i in ids]
+        return [Event(i["event_id"],"select") for i in ids]
     
     def add_location(self,location_dict):
         new_location=Location(location_dict,-1)
