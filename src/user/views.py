@@ -117,7 +117,7 @@ def get_all_locations(request):
     try:
         user = User(request.userid)
         result=user.get_all_locations()
-        return JsonResponse({"code":1,"data":[i.to_dict() for i in result]})
+        return JsonResponse({"code":1,"data":result})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"getAllLocationsError:"+str(e)})
 
@@ -126,6 +126,7 @@ def add_location(request):
         user = SuperUser(request.userid)
         data = json.loads(request.body.decode("utf-8"))
         location_dict={
+            "location_firstname":data["locationFirstname"],
             "location_name":data["locationName"],
             "location_description":data["locationDescription"],
             "location_capacity":data["locationCapacity"],
@@ -144,6 +145,3 @@ def delete_location(request):
         return JsonResponse({"code":1,"removeOk":True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"deleteLocationError:"+str(e)})
-    
-def update_location(request):
-    pass

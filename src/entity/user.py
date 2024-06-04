@@ -197,8 +197,39 @@ class User():
 
     def get_all_locations(self):
         ids=self.get_all_locations_id()
-      
-        return [Location(None,i["location_id"]) for i in ids]
+        location_list=[Location(None,i["location_id"]) for i in ids]
+            # 处理结果
+        result = []
+        current_firstname = None
+        current_list = []
+        
+        for location in location_list:
+            firstname, name, capacity, id,description = location.get(["firstname","name","capacity","id","description"])
+            
+            if firstname != current_firstname:
+                if current_firstname is not None:
+                    result.append({
+                        "firstname": current_firstname,
+                        "list": current_list
+                    })
+                current_firstname = firstname
+                current_list = []
+            
+            current_list.append({
+                "name": name,
+                "size": capacity,
+                "id": id,
+                "description":description
+            })
+        
+        # 最后一个一级地点
+        if current_firstname is not None:
+            result.append({
+                "firstname": current_firstname,
+                "list": current_list
+            })
+        
+        return result
     
 
 

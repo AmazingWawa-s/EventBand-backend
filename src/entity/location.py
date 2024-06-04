@@ -1,7 +1,7 @@
 from entity.db import LocationDB
 class Location():
     def __init__(self,dict,id=-1):
-        self.available=["id","name","description","capacity","type"]
+        self.available=["id","firstname","name","description","capacity","type"]
         if id==-1:
             self.state="create"
             self.set(dict)
@@ -24,10 +24,6 @@ class Location():
                 sq+=('location_'+attr+'="'+str(value)+'", ')
         sq=sq[:-2]
         dbop.updateLocation(self.id,sq)
-
-    def addLocation(self):
-        dbop=LocationDB()
-        dbop.insertNewLocation(self.name,self.description,self.capacity,self.type)     
         
         
     def get(self,attr_list):
@@ -52,7 +48,7 @@ class Location():
     def addlocation(self):
         dbop=LocationDB()
 
-        dbop.insertNewLocation(self.id,self.name,self.description,self.capacity,self.type)
+        dbop.insertNewLocation(self.id,self.firstname,self.name,self.description,self.capacity,self.type)
     def deletelocation(self):
         dbop=LocationDB()
         dbop.deleteLocationById(self.id)
@@ -67,6 +63,8 @@ class Location():
 
         return result_dict
     
-        
-        
+class SuperLocation(Location):
+    pass
+
+
     

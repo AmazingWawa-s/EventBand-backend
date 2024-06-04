@@ -103,8 +103,8 @@ class LocationDB(DB):
     def selectAllLocations(self,attrs):
         self.cursor.execute("select "+attrs+" from location")
         
-    def insertNewLocation(self,lid,name,description,capacity,type):
-        self.cursor.execute("insert into location (location_id,location_name,location_description,location_capacity,location_type) values (%s,%s,%s,%s,%s)",[lid,name,description,capacity,type])
+    def insertNewLocation(self,lid,firstname,name,description,capacity,type):
+        self.cursor.execute("insert into location (location_id,location_firstname,location_name,location_description,location_capacity,location_type) values (%s,%s,%s,%s,%s,%s)",[lid,firstname,name,description,capacity,type])
         self.conn.commit()
     def updateLocation(self,id,toset):
         self.cursor.execute("update location set "+toset+" where location_id="+str(id))
