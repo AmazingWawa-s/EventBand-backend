@@ -97,14 +97,30 @@ def delete_event(request):
 def get_invite_code(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
-        temp_event=PrivateEvent(data["eventId"])
-        if request.userid != temp_event.get(["id"])[0]:
-            return JsonResponse({"code":1, "isCreator": False})
-        
-        result=temp_event.get_invite_code()
-        return JsonResponse({"code":1, "isCreator": True, "inviteCode":result})
+        result=utils.get_invite_code(data["eventId"])
+        return JsonResponse({"code":1, "inviteCode":result})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"getInviteCodeError:"+str(e)})
 
+def private_event_detail_page(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        temp_event=PrivateEvent(data["eventId"],"select")
+        result=temp_event.to_dict()
+        
+        # 参与者列表：包括用户id和名称
+        participant_list=[]
+        for participant_id in temp_event.get(["participants"])[0]:
+            temp_dict={}
+            temp_dict["id"]=participant_id
+            temp_dict["name"]=User(participant_id).get(["name"])[0]
+            participant_list.append(temp_dict)
+        result["participants"]=participant_list
 
+        # 用户在活动中的身份
+        result["role"]=temp_event.get_user_role(request.userid)
+
+        return JsonResponse({"code":1, "data":result})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"getPrivateEventDetailError:"+str(e)})
         

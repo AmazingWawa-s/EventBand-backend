@@ -19,6 +19,7 @@ class Event():
    
         if self.id>=0 and self.state=="select":
             self.getFromDB("*")
+            self.participants:list = []
         elif self.state=="update":
             pass
         elif self.id==-1 and self.state=="create":
@@ -93,6 +94,17 @@ class Event():
         sq=sq[:-2]
         dbop.updateEvent(self.id,sq)
 
+
+    def get_user_role(self,user_id):
+        dbop=EventDB()
+        dbop.selectEUByUserId("eurelation_role",user_id)
+        result=dbop.get()
+        if result==1:
+            return "creator"
+        elif result==0:
+            return "participant"
+        else:
+            return "undefined"
        
 
 

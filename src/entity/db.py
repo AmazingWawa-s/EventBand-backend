@@ -63,6 +63,8 @@ class EventDB(DB):
         self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_user_id ="+str(id)+" and eurelation_role="+str(role))
     def selectEUByEventId(self,attrs,id):
         self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_event_id ="+str(id))
+    def selectEUByUserId(self,attrs,id):
+        self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_user_id ="+str(id))
     
     def insertEU(self,event_id,user_id,role):
         self.cursor.execute("insert into eurelation (eurelation_event_id,eurelation_user_id,eurelation_role) values(%s,%s,%s)",[event_id,user_id,role])

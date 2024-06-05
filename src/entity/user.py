@@ -55,11 +55,6 @@ class User():
         result=dbop.get()
         if len(result)==1:
             self.set(result[0])
-        
-        
-   
-
-
 
     def autoUpdate(self):
         dbop=UserDB()
@@ -230,8 +225,6 @@ class User():
             })
         
         return result
-    
-
 
     
 
