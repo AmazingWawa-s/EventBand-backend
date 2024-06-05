@@ -8,13 +8,16 @@ import pymysql
 from entity.user import User,SuperUser
 from entity.event import Event,PrivateEvent,PublicEvent
 
-
+#views.py中的函数名均为小写单词加下划线分隔符
+#entity中类的成员函数命名均为第一个单词首字母小写，之后的单词首字母大写，无分割符
+#db.py中的函数命名均为第一个单词首字母大写，之后的单词首字母小写，无分割符
+#utils.py中的函数命名均为第一个单词首字母大写，之后的单词首字母小写，分隔符为下划线
 def create_private_event(request):
     try:
-        user = User(request.userid)
+        
         data = json.loads(request.body.decode("utf-8"))
         temp_dict = {
-            "creator_id":user.get(["id"]),
+            "creator_id":request.userid,
             "name":data["eventName"],
             "start_time":data["eventStartTime"],
             "end_time":data["eventEndTime"],
@@ -23,7 +26,7 @@ def create_private_event(request):
             "location_id":data["eventLocationId"],
             "description":data["eventDescription"],
         }
-        s=user.create_private_event(temp_dict)
+        s=User.create_private_event(request.userid,temp_dict)
         if s==True:
             return JsonResponse({"code":1,"create_Event_Ok":True})
         elif s==False:
@@ -35,59 +38,35 @@ def create_private_event(request):
 
 def load_user_page(request):
     try:
-        user = User(request.userid)
-        result_created=user.get_created_event()
-        # if len(result1)==0:
-        #     return JsonResponse({"code":1, "have_no_created_event": True})
-        result_participated=user.get_participated_event()
-        # if len(result2)==0:
-        #     return JsonResponse({"code":1, "have_no_participated_event": True})
-        result_locations=user.get_all_locations()
+        res={}
+        
+        tempuser=User(request.userid,"select")
+        result_events=tempuser.getEvents()
+        
+        result_locations=[i.to_dict() for i in User.getAllLocations()]
 
-        result={}
-        result["created"]=result_created
-        result["participated"]=result_participated
-        result["locationList"]=result_locations
-        return JsonResponse({"code":1, "data": result})
+        
+        res["eventlist"]=result_events
+        res["locationlist"]=result_locations
+        return JsonResponse({"code":1, "data": res})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"loadUserPageError:"+str(e)})
     
 
 def get_all_events(request):
     try:
-        su=SuperUser(request.userid)
-        result=su.get_all_events()
-        return JsonResponse({"code":1,"data":[i.to_dict() for i in result]}) 
+        su=SuperUser(request.userid,"classattrs")
+        result=su.getAllEvents()
+        return JsonResponse({"code":1,"data":result}) 
     except Exception as e:
         return JsonResponse({"code":0,"msg":"getAllEventsError"+str(e)})
 
-def get_created_events(request):
 
-    try:
-        user = User(request.userid)
-        result=user.get_created_event()
-        if len(result)==0:
-            return JsonResponse({"code":1, "have_no_created_event": True})
-        
-        return JsonResponse({"code":1, "data": result})
-    except Exception as e:
-        return JsonResponse({"code":0,"msg":"getCreatedEventsError:"+str(e)})
-    
 
-def get_participated_events(request):
-    try:
-        user = User(request.userid)
-        result=user.get_participated_event()
-        if len(result)==0:
-            return JsonResponse({"code":1, "have_no_participated_event": True})
-        
-        return JsonResponse({"code":1, "data": result})
-    except Exception as e:
-        return JsonResponse({"code":0,"msg":"getParticipatedEventsError:"+str(e)})
 
 def delete_event(request):
     try:
-        user = User(request.userid)
+        user = User(request.userid,"select")
         data = json.loads(request.body.decode("utf-8"))
         user.delete_event(data["eventId"])
         return JsonResponse({"code":1, "removeOk": True})

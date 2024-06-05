@@ -1,21 +1,32 @@
 from entity.db import LocationDB
+from event_band.utils import exist
+
 class Location():
-    def __init__(self,dict,id=-1):
-        self.available=["id","firstname","name","description","capacity","type"]
-        if id==-1:
-            self.state="create"
-            self.set(dict)
-        else:
-            self.state="update"
-            self.getFromDB("*",id)
-    
+#初始化函数---------------------------------------------------
+    def __init__(self,id,state):
+        self.available=["id","firstname","name","description","capacity","type"]#允许与数据库交互的属性
+        self.state=state#实例的状态
+        self.id=id
+        if id==-1 and self.state=="create":
+            pass 
+        elif id>=0 and self.state=="update":
+            pass
+        elif id>=0 and self.state=="select":
+            self.getFromDB("*",self.id)
+        else :raise ValueError("unexpected initialize class Location")
+        
+#析构函数-------------------------------------------------------    
     def __del__(self):
         if self.state=="create":
-            self.addlocation()
+            self.addLocation()
         elif self.state=="update":
-            self.autoUpdate()
-        
-    def autoUpdate(self):
+            self.updateLocation()
+        elif self.state=="select":
+            pass
+        else:raise ValueError("unexpected delete class Location in function __del__")
+      
+#更新event数据库中关于此活动的信息-------------------------------------------------------   
+    def updateLocation(self):
         dbop=LocationDB()
         dct=vars(self)
         sq=""
@@ -25,46 +36,52 @@ class Location():
         sq=sq[:-2]
         dbop.updateLocation(self.id,sq)
         
-        
+#从类中获得属性-------------------------------------------------------         
     def get(self,attr_list):
-        return [getattr(self,attr) for attr in attr_list]
-
+        if exist(attr_list):
+            return [getattr(self,attr) for attr in attr_list]
+        else:raise ValueError("class Location lack attributes in function get")
+    
+#给类中的属性赋值-------------------------------------------------------   
     def set(self,attr_dict):
         for attr,value in attr_dict.items():
-            if attr[9:] not in self.available:
-                raise ValueError("Not available from Location")
-            elif attr[9:] in self.available:
-                setattr(self,attr[9:],value)
-                
+            setattr(self,attr[9:],value)
+           
+#从location库中获得关于此活动的内容-----------------------------------------
     def getFromDB(self,attrs,id):
         dbop=LocationDB()
         dbop.selectLocationById(attrs,id)
         result=dbop.get()
         if len(result)==1:
             self.set(result[0])
-        else:raise ValueError("Location Id Not Exist")
+        else:raise ValueError("Location getFromDB Error")
             
-    #超级用户新增场地
-    def addlocation(self):
+#超级用户新增场地----------------------------------------------------------
+    def addLocation(self):
         dbop=LocationDB()
-
-        dbop.insertNewLocation(self.id,self.firstname,self.name,self.description,self.capacity,self.type)
-    def deletelocation(self):
-        dbop=LocationDB()
-        dbop.deleteLocationById(self.id)
+        if exist(["firstname","name","description","capacity","type"]):
+            dbop.insertNewLocation(self.id,self.firstname,self.name,self.description,self.capacity,self.type)
+        else:raise ValueError("class Location lack attributes in function addlocation")
 
 
+#将此地点的与数据库有关的属性变成字典------------------------------------------
     def to_dict(self) -> dict:
         # 前端接口
         result_dict = {}
         for key,value in vars(self).items():
             if key in self.available:
                 result_dict[key]=value
-
         return result_dict
-    
+
+
+
+
+
+
 class SuperLocation(Location):
-    pass
+    def __init__(self, id, state):
+        super().__init__(id, state)
+    
 
 
     
