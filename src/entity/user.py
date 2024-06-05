@@ -7,24 +7,33 @@ import event_band.utils as utils
 from entity.db import UserDB,EventDB,LocationDB
 class User():
 #初始化函数---------------------------------
-    def __init__(self,request):
+    def __init__(self,nid,state):
         self.available=["id","name","password","authority"]#允许被保存到数据库中的属性
-        if type(request) is int:
-            self.name=""
-            self.id=request
+        self.state=state
+        if type(nid) is int and self.state=="classattrs":#调用用户包含的类，而不对用户本身的属性修改
+            self.id=nid
+            self.getFromDBById("user_authority",self.id)
+        elif type(nid) is int and self.state=="delete":#删除用户
+            self.id=nid
+            self.getFromDBById("user_authority",self.id)
+        elif type(nid) is int and self.state=="update":#更新用户
+            self.id=nid
+            self.getFromDBById("user_authority,user_password",self.id)
+        elif type(nid) is int and self.state=="select":#查询数据
+            self.id=nid
             self.getFromDBById("*",self.id)
-            self.created_event_id=[i["event_id"] for i in self.get_created_event()]#该用户创建的活动
-            self.participated_event_id=[i["event_id"] for i in self.get_participated_event()]#该用户参加的活动
-        elif type(request) is str:
-            self.name=request
+            self.created_event_id=[]
+            self.participated_event_id=[]
+            self.events=self.getEventsFromDB()
+        elif type(nid) is str and self.state=="create":#创建用户
+            self.name=nid
             self.id=-1
-            self.password=""
-            self.getFromDBByName("*",self.name)  
+            self.getFromDBByName("user_id,user_authority",self.name)
+        elif type(nid) is str and self.state=="login":#用户登录
+            self.name=nid
+            self.id=-1
+            self.getFromDBByName("user_id,user_password,user_authority",self.name)    
         else:
-            # 默认初始化
-            self.id=-1
-            self.name=""
-            self.password=""
             raise ValueError("class User initialize unexpected")
         
 #析构函数-----------------------------------      
@@ -32,36 +41,38 @@ class User():
         pass
         
     
-    
+#从类中获得属性-------------------------------------------------------   
     def get(self,attr_list):
-        return [getattr(self,attr) for attr in attr_list]
-
+        if utils.exist(attr_list):
+            return [getattr(self,attr) for attr in attr_list]
+        else:raise ValueError("class User lack attributes in function get")
+        
+#给类中的属性赋值-------------------------------------------------------   
     def set(self,attr_dict):
         for attr,value in attr_dict.items():
             if attr[5:] in self.available:
                 setattr(self,attr[5:],value)
-        
+
+#通过id获取用户信息-----------------------------------------------------
     def getFromDBById(self,attrs,id):
         dbop=UserDB()
         dbop.selectById(attrs,id)
         result=dbop.get()
         if len(result)==1:
             self.set(result[0])
-        else:raise ValueError("User Id Not Exist")
-            
+        else:raise ValueError("class User error in function getFromDBById ")
+        
+#通过name获取用户信息--------------------------------------------------- 
     def getFromDBByName(self,attrs,name):
         dbop=UserDB()
         dbop.selectByName(attrs,name)
         result=dbop.get()
         if len(result)==1:
             self.set(result[0])
+        else:raise ValueError("class User error in function getFromDBByName ")
         
-        
-   
-
-
-
-    def autoUpdate(self):
+#更新用户信息----------------------------------------------------------
+    def updateUser(self):
         dbop=UserDB()
         dct=vars(self)
         sq=""
@@ -69,9 +80,24 @@ class User():
             if attr in self.available:
                 sq+=('user_'+attr+'="'+str(value)+'", ')
         sq=sq[:-2]
-
         dbop.updateUser(self.id,sq)
             
+#获取与用户有关的活动-----------------------------------------------------
+    def getEvents(self):
+        return self.events
+    
+    def getEventsFromDB(self):
+        dbop=EventDB()
+        dbop.selectEUByUser(self.id)
+        result=dbop.get()
+        
+        for i in result:
+            if i["eurelation_role"]=="creator":
+                self.created_event_id.append(i["eurelation_user_id"])
+            elif i["eurelation_role"]=="participant":
+                self.participated_event_id.append(i["eurelation_user_id"])
+        
+        return result
     def get_created_event(self):
         dbop=EventDB()
         dbop.selectEUByUserIdRole("eurelation_event_id",self.id,1)
@@ -107,39 +133,40 @@ class User():
 
         dbop.selectByIds("*",ids)
         return dbop.get()
-        
-    def create_private_event(self,dit:dict):
+    @staticmethod
+    def create_private_event(uid,dit:dict):
         
         edbop=EventDB()
-        year=dit["start_date"]["year"]
-        month=dit["start_date"]["month"]
-        day=dit["start_date"]["day"]
-        star_hour=dit["start_time"]["hour"]
-        star_min=dit["start_time"]["minute"]
-        star=star_hour*60+star_min
-        en_hour=dit["end_time"]["hour"]
-        en_min=dit["end_time"]["minute"]
-        en=en_hour*60+en_min
-        dt=str(year)+"-"+str(month)+"-"+str(day)
-        edbop.checkCollision1(dit["location_id"],dt,star,en)
+        year,month,day=dit["start_date"]["year"],dit["start_date"]["month"],dit["start_date"]["day"]
+        start_hour,start_min=dit["start_time"]["hour"],dit["start_time"]["minute"]
+        startnum=start_hour*60+start_min
+        end_hour,end_min=dit["end_time"]["hour"],dit["end_time"]["minute"]
+        endnum=end_hour*60+end_min
+        
+        datestr=str(year)+"-"+str(month)+"-"+str(day)
+        
+        edbop.checkCollision1(dit["location_id"],datestr,startnum,endnum)
         result=edbop.get()
         if len(result)>=1:
             return False
-        edbop.checkCollision2(dit["location_id"],dt,star,en)
+        
+        edbop.checkCollision2(dit["location_id"],datestr,startnum,endnum)
         result=edbop.get()
         if len(result)>=1:
             return False
-        edbop.checkCollision3(dit["location_id"],dt,star,en)
+        
+        edbop.checkCollision3(dit["location_id"],datestr,startnum,endnum)
         result=edbop.get()
         if len(result)>=1:
             return False
-        else :
-            temp_event = PrivateEvent(-1,"create")
-            tid=utils.return_current_event_id(1)
-            temp_event.set({"event_id":tid,"event_name":dit["name"],"event_start":dt+":"+str(star),"event_end":dt+":"+str(en),"event_location_id":dit["location_id"],"event_description":dit["description"],"event_type":1,"event_creator_id":self.id})
-            edbop.insertEU(temp_event.get(["id"])[0],self.id,1)
-            edbop.insertEL(temp_event.get(["id"])[0],dit["location_id"],dt,star,en)
-            return True
+        
+        
+        temp_event = PrivateEvent(-1,"create")
+        eid=utils.return_current_event_id(1)
+        temp_event.set({"event_id":eid,"event_name":dit["name"],"event_start":datestr+":"+str(startnum),"event_end":datestr+":"+str(endnum),"event_location_id":dit["location_id"],"event_description":dit["description"],"event_type":1,"event_creator_id":self.id})
+        edbop.insertEU(eid,uid,"creator")
+        edbop.insertEL(eid,dit["location_id"],datestr,startnum,endnum)
+        return True
             
             
         
@@ -156,7 +183,9 @@ class User():
         
     
     def create_public_event(self,event_dict:dict):
-        temp_event = PublicEvent(-1,self.id)
+        temp_event = PublicEvent(-1,"create")
+        eid=utils.return_current_event_id(1)
+        temp_event.set({"event_id":eid})
         temp_event.set(self,event_dict)
     
         #更新活动简略表
@@ -174,15 +203,10 @@ class User():
     
     def delete_event(self,event_id):
         dbop=EventDB()
-        dbop.selectById("*",event_id)
-        result=dbop.get()
-
-        if len(result)==0:
-            raise ValueError("Event Id not exist")
         if event_id not in self.created_event_id:
             raise ValueError("Only creator can delete event")
         
-        
+        dbop.deleteELByEventId(event_id)
         dbop.deleteEUByEventId(event_id)
         dbop.deleteEventById(event_id)
 
@@ -193,11 +217,50 @@ class User():
         dbop=LocationDB()
         dbop.selectAllLocations("location_id")
         return dbop.get()
+    
+    @staticmethod
+    def getAllLocations():
+        dbop=LocationDB()
+        dbop.selectAllLocations("*")
+        dbresult=dbop.get()
+        result = []
+        current_firstname = None
+        current_list = []
+        for i in dbresult:
+            firstname=i["location_firstname"]
+            name=i["location_name"]
+            capacity=i["location_capacity"]
+            id=i["location_id"]
+            description=i["description"]
+            if firstname != current_firstname:
+                if current_firstname is not None:
+                    result.append({
+                        "firstname": current_firstname,
+                        "list": current_list
+                    })
+                current_firstname = firstname
+                current_list = []
+            
+            current_list.append({
+                "name": name,
+                "size": capacity,
+                "id": id,
+                "description":description
+            })
+        
+        # 最后一个一级地点
+        if current_firstname is not None:
+            result.append({
+                "firstname": current_firstname,
+                "list": current_list
+            })
+        
+        return result
         
 
     def get_all_locations(self):
         ids=self.get_all_locations_id()
-        location_list=[Location(None,i["location_id"]) for i in ids]
+        location_list=[Location(i["location_id"],"select") for i in ids]
             # 处理结果
         result = []
         current_firstname = None
@@ -233,12 +296,13 @@ class User():
     
 
 
-    
-
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------
+#类分界线 
+#----------------------------------------------------------------------------------------------------------------------------------------------------------- 
 
 class SuperUser(User):
-    def __init__(self,nid):
-        super().__init__(nid)
+    def __init__(self,nid,state):
+        super().__init__(nid,state)
         if "authority" not in vars(self).keys():
             raise ValueError("expected authority")
         
@@ -250,8 +314,11 @@ class SuperUser(User):
     def __del__(self):
         if self.authority!=0:
             raise ValueError(f"expected authority=0,but ={self.authority}")   
-        elif self.id>=0:
-            self.autoUpdate()
+        elif self.id>=0 and self.state=="update":
+            self.updateUser()
+        elif self.id>=0 and self.state=="classattrs":
+            pass
+        else:raise ValueError("unexpected delete class SuperUser in function __del__")
         super().__del__()
 
 
@@ -263,38 +330,46 @@ class SuperUser(User):
         # 活动审核
         pass
     
-    def get_all_events(self):
+    def getAllEvents(self):
         dbop=EventDB()
-        dbop.selectAll("event_id")
-        ids=dbop.get()
-        return [Event(i["event_id"],"select") for i in ids]
+        dbop.selectAllEvents()
+        return dbop.get()
     
     def add_location(self,location_dict):
-        new_location=Location(location_dict,-1)
-        
+        new_location=Location(-1,"create")
+        new_location.set(location_dict)
         new_location.set({"location_id":utils.return_current_location_id(1)})
-
+        
+#超级用户删除场地----------------------------------------------------------
     def delete_location(self,location_id):
         dbop=LocationDB()
         dbop.deleteLocationById(location_id)
+        
     def update_location(self,location_dict,location_id):
-        temp_location=Location(None,location_id)
+        temp_location=Location(location_id,"update")
         temp_location.set(location_dict)
     
 
 
-
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------
+#类分界线 
+#----------------------------------------------------------------------------------------------------------------------------------------------------------- 
 
 
 class NormalUser(User):
-    def __init__(self,nid):
-        super().__init__(nid)
+    def __init__(self,nid,state):
+        super().__init__(nid,state)
 
     def __del__(self):
-        if self.id==-1 and self.password!="":
+        if self.id==-1 and self.state=="create":
             self.insertUser()
-        elif self.id>=0:
-            self.autoUpdate()
+        elif self.id>=0 and self.state=="update":
+            self.updateUser()
+        elif self.id>=0 and self.state=="delete":
+            self.deleteUser()
+        elif self.id>=0 and self.state=="classattrs":
+            pass
+        else:raise ValueError("unexpected delete class NormalUser in function __del__")
         super().__del__()
         
 
@@ -312,7 +387,6 @@ class NormalUser(User):
         if self.authority==0:
             raise ValueError("superuser can't be added")
         dbop=UserDB()
-
         dbop.insertNewUser(self.name,self.password)
 
     def get_all_normal_users(self):

@@ -1,5 +1,5 @@
 from entity.db import UserDB,EventDB
-
+from event_band.utils import exist
 class Event():
 #初始化函数---------------------------------------------------
     def __init__(self,event_id,state):
@@ -23,7 +23,7 @@ class Event():
             pass
         elif self.id==-1 and self.state=="create":
             pass
-        else :raise ValueError("unexpected initialize event")
+        else :raise ValueError("unexpected initialize class Event")
             
 #析构函数-------------------------------------------------------        
     def __del__(self):
@@ -35,11 +35,13 @@ class Event():
             self.updateEvent()
         elif self.state=="select":
             pass
-        else :raise ValueError("unexpected delete event")
+        else :raise ValueError("unexpected delete class Event in function __del__")
 
 #从类中获得属性-------------------------------------------------------   
     def get(self,attr_list):
-        return [getattr(self,attr) for attr in attr_list]
+        if exist(attr_list):
+            return [getattr(self,attr) for attr in attr_list]
+        else:raise ValueError("class Event lack attributes in function get")
 
 #给类中的属性赋值-------------------------------------------------------   
     def set(self,attr_dict):
@@ -61,9 +63,11 @@ class Event():
         dbop=EventDB()
         dbop.selectEUByEventId("eurelation_user_id",self.id)
         result=dbop.get()
-        for i in result:
-            participant_id=i["eurelation_user_id"]
-            self.participants.append(participant_id)
+        if exist(["participants"]):
+            for i in result:
+                participant_id=i["eurelation_user_id"]
+                self.participants.append(participant_id)
+        else:raise ValueError("class Event lack attributes in function getFromEUDB")
 
 #向event库中增加此活动的信息-------------------------------------------------------   
     def insertEvent(self):
@@ -93,10 +97,6 @@ class Event():
         sq=sq[:-2]
         dbop.updateEvent(self.id,sq)
 
-       
-
-
-
 #将此活动的与数据库有关的属性变成字典-------------------------------------------------------   
     def to_dict(self) -> dict:
         # 前端接口
@@ -105,14 +105,12 @@ class Event():
             if key in self.available:
                 result_dict[key]=value
         return result_dict
-
-
-
+    
 
 
 class PrivateEvent(Event):
-    def __init__(self,event_id):
-        super().__init__(event_id)
+    def __init__(self,event_id,state):
+        super().__init__(event_id,state)
         self.type=0     # 私有
 
     def to_dict(self) -> dict:
@@ -123,10 +121,9 @@ class PrivateEvent(Event):
         return temp_dict
 
  
- 
- 
+
 class PublicEvent(Event):
-    def __init__(self,id):
-        super().__init__(id)
+    def __init__(self,id,state):
+        super().__init__(id,state)
         self.type=1    # 公有
  

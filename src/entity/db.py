@@ -23,7 +23,7 @@ class UserDB(DB):
     def selectById(self,attrs,id):
         self.cursor.execute("select "+ attrs +" from user where user_id ="+str(id))
     def selectByName(self,attrs,name):
-        self.cursor.execute("select * from user where user_name =%s",name)
+        self.cursor.execute("select "+ attrs +" from user where user_name ="+str(name))
     def select(self,attrs,nid):
         if type(nid) is int:
             self.cursor.execute("select "+ attrs +" from user where user_id ="+str(nid))
@@ -53,14 +53,18 @@ class EventDB(DB):
         self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id=%s and elrelation_end>=%s and elrelation_end<=%s",[date,location,start,end])
     def checkCollision3(self,location,date,start,end):
         self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id=%s and elrelation_start<=%s and elrelation_end>=%s",[date,location,start,end])
-    def selectAll(self,attrs):
-        self.cursor.execute("select "+attrs+" from event_brief")
+    def selectAllEvents(self):
+        self.cursor.execute("select * from event_brief")
     def selectById(self,attrs,id):
         self.cursor.execute("select "+ attrs +" from event_brief where event_id ="+str(id))
     def selectByIds(self,attrs,ids):
         self.cursor.execute("select "+ attrs +" from event_brief where event_id in (" + ids + ")")
+        
+    def selectEUByUser(self,id):
+        self.cursor.execute("select eu.eurelation_role,eu.eurelation_user_id,eb.* from eurelation eu left join event_brief eb on eu.eurelation_event_id=eb.event_id where eu.eurelation_user_id ="+str(id))
+        
     def selectEUByUserIdRole(self,attrs,id,role):
-        self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_user_id ="+str(id)+" and eurelation_role="+str(role))
+        self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_user_id ="+str(id)+" and eurelation_role="+role)
     def selectEUByEventId(self,attrs,id):
         self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_event_id ="+str(id))
     
@@ -83,11 +87,14 @@ class EventDB(DB):
     def getLastEventId(self):
         self.cursor.execute("select event_id from event_brief order by event_id desc limit 1")
 
+    def deleteELByEventId(self,eid):
+        self.cursor.execute("delete from elrelation where elrelation_event_id=%s",eid)
+        self.conn.commit()
     def deleteEventById(self,id):
         self.cursor.execute("delete from event_brief where event_id=%s",id)
         self.conn.commit()
     def deleteEUByEventId(self,event_id):
-        self.cursor.execute("delete from eurelation where eurelation_event_id=%s and eurelation_role=1",event_id)
+        self.cursor.execute("delete from eurelation where eurelation_event_id=%s and eurelation_role='creator'",event_id)
         self.conn.commit()
     def deleteEUByUserId(self,user_id):
         self.cursor.execute("delete from eurelation where eurelation_user_id=%s and eurelation_role=1",user_id)

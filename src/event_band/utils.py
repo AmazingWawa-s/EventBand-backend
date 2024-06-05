@@ -8,6 +8,8 @@ from django.http import JsonResponse
 from entity.user import User
 from entity.semaphore import Semaphore
 from entity.db import EventDB,LocationDB
+import random
+import string
 
 
 current_event_id=0
@@ -105,13 +107,13 @@ def return_current_location_id(num):
     #         connection.rollback()
     #         return JsonResponse({"code":0,"msg":""+str(e)})
 
-def createUser(result):
-    ls=[]
-    for i in result:
-        tempUser = User(result[i][0],result[i][1])
-        ls.append(tempUser)
+# def createUser(result):
+#     ls=[]
+#     for i in result:
+#         tempUser = User(result[i][0],result[i][1])
+#         ls.append(tempUser)
 
-    return ls
+#     return ls
 def is_json(r):
     try:
         json.loads(r)
@@ -119,3 +121,26 @@ def is_json(r):
     except Exception as e:
         return False
     
+def generate_invite_id(id):
+    prefix = hex(int(id))[2:]+ 'L'
+    length = length - len(prefix)
+    chars=string.ascii_letters+string.digits
+    return prefix + ''.join([random.choice(chars) for i in range(length)])
+
+def get_id(code):
+    ''' Hex to Dec '''
+    return str(int(code.upper(), 16))
+
+
+#检查类的实例中是否存在ls中的所有属性-------------------------------------------
+def exist(clas,ls):
+    for i in ls:
+        if not hasattr(clas,i):
+            return False
+    return True
+# if __name__=="__main__":
+#     for i in range(10,500,35):
+#         code = generate_invite_id(i)
+#         id_hex = code.split('L')[0]
+#         id  = get_id(id_hex)
+#         print(code,id)

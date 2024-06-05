@@ -24,8 +24,6 @@ urlpatterns = [
     # event
     path("createevent/private/",ev.create_private_event),
     path("userpage/",ev.load_user_page),
-    path("getevents/created/",ev.get_created_events),
-    path("getevents/participated/",ev.get_participated_events),
     path("deleteevent/",ev.delete_event)
 ]
 

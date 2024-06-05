@@ -11,7 +11,7 @@ from entity.user import SuperUser,NormalUser,User
 def register(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
-        tUser = NormalUser(data["userName"])
+        tUser = NormalUser(data["userName"],"create")
         
         # 用户名已存在
         if tUser.get(["id"])[0]>=0:
@@ -20,7 +20,7 @@ def register(request):
         # 用户名不存在时创建新的用户
         encode_password=utils.encoder(data["userPassword"])
         tUser.set({"user_password":encode_password,"user_authority":1})
-        #tUser.insertUser()
+       
         return JsonResponse({"code":1,"userNameExist":False,"register_ok":True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"registerError:"+str(e)})
@@ -29,7 +29,7 @@ def register(request):
 def login(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
-        tUser = NormalUser(data["userName"])
+        tUser = NormalUser(data["userName"],"login")
         
         # 输入的用户名不存在时返回错误
         if tUser.get(["id"])[0]==-1:
@@ -57,8 +57,7 @@ def login(request):
 def remove(request):
     try:
         id = request.userid
-        tUser=NormalUser(id)
-        tUser.deleteUser()
+        tUser=NormalUser(id,"delete")
         return JsonResponse({"code":1,"removeOk":True})    
     except Exception as e:
         return JsonResponse({"code":0,"msg":"removeError:"+str(e)})   
@@ -74,7 +73,7 @@ def change_pwd(request):
         
         id = request.userid
 
-        tUser=NormalUser(id)
+        tUser=NormalUser(id,"update")
 
         if new_password == tUser.get(["password"])[0]:
         # 新密码和原密码相同
@@ -88,11 +87,11 @@ def change_pwd(request):
 def super_login(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
-        sUser = SuperUser(data["userName"])
+        sUser = SuperUser(data["userName"],"login")
         
         # 输入的用户名不存在时返回错误
         if sUser.get(["id"])[0]==-1:
-            return JsonResponse({"code":1,"isSuperUser":True,"userNameExist":False})
+            return JsonResponse({"code":1,"isSuperUser":False,"userNameExist":False})
         
         # 用户名存在
         encode_password=utils.encoder(data["userPassword"])
@@ -115,15 +114,14 @@ def super_login(request):
 
 def get_all_locations(request):
     try:
-        user = User(request.userid)
-        result=user.get_all_locations()
+        result=User.getAllLocations()
         return JsonResponse({"code":1,"data":result})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"getAllLocationsError:"+str(e)})
 
 def add_location(request):
     try:
-        user = SuperUser(request.userid)
+        user = SuperUser(request.userid,"classattrs")
         data = json.loads(request.body.decode("utf-8"))
         location_dict={
             "location_firstname":data["locationFirstname"],
@@ -139,7 +137,7 @@ def add_location(request):
 
 def delete_location(request):
     try:
-        user = SuperUser(request.userid)
+        user = SuperUser(request.userid,"classattrs")
         data = json.loads(request.body.decode("utf-8"))
         user.delete_location(data["locationId"])
         return JsonResponse({"code":1,"removeOk":True})
