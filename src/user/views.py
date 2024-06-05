@@ -12,7 +12,6 @@ def register(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
         tUser = NormalUser(data["userName"],"create")
-        
         # 用户名已存在
         if tUser.get(["id"])[0]>=0:
             return JsonResponse({"code":1,"userNameExist":True})

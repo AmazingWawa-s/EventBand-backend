@@ -1,5 +1,5 @@
 from entity.db import UserDB,EventDB
-from event_band.utils import exist
+import event_band.utils as utils
 class Event():
 #初始化函数---------------------------------------------------
     def __init__(self,event_id,state):
@@ -40,7 +40,7 @@ class Event():
 
 #从类中获得属性-------------------------------------------------------   
     def get(self,attr_list):
-        if exist(attr_list):
+        if utils.exist(self,attr_list):
             return [getattr(self,attr) for attr in attr_list]
         else:raise ValueError("class Event lack attributes in function get")
 
@@ -56,6 +56,8 @@ class Event():
         result=dbop.get()        
         if len(result)==1:
             self.set(result[0])
+        elif len(result)==0:
+            pass
         else :raise ValueError("Event getFromDB Error")
     
 #从eurelation库中获得参加此活动的人-------------------------------------------------------   
@@ -64,7 +66,7 @@ class Event():
         dbop=EventDB()
         dbop.selectEUByEventId("eurelation_user_id",self.id)
         result=dbop.get()
-        if exist(["participants"]):
+        if utils.exist(self,["participants"]):
             for i in result:
                 participant_id=i["eurelation_user_id"]
                 self.participants.append(participant_id)

@@ -15,6 +15,7 @@ class User():
             self.getFromDBById("user_authority",self.id)
         elif type(nid) is int and self.state=="delete":#删除用户
             self.id=nid
+            self.authority=-1
             self.getFromDBById("user_authority",self.id)
         elif type(nid) is int and self.state=="update":#更新用户
             self.id=nid
@@ -27,8 +28,12 @@ class User():
             self.events=self.getEventsFromDB()
         elif type(nid) is str and self.state=="create":#创建用户
             self.name=nid
+            self.password=""
             self.id=-1
+            self.authority=1
+            print(11)
             self.getFromDBByName("user_id,user_authority",self.name)
+            print(22)
         elif type(nid) is str and self.state=="login":#用户登录
             self.name=nid
             self.id=-1
@@ -43,7 +48,7 @@ class User():
     
 #从类中获得属性-------------------------------------------------------   
     def get(self,attr_list):
-        if utils.exist(attr_list):
+        if utils.exist(self,attr_list):
             return [getattr(self,attr) for attr in attr_list]
         else:raise ValueError("class User lack attributes in function get")
         
@@ -60,6 +65,8 @@ class User():
         result=dbop.get()
         if len(result)==1:
             self.set(result[0])
+        elif len(result)==0:
+            pass
         else:raise ValueError("class User error in function getFromDBById ")
         
 #通过name获取用户信息--------------------------------------------------- 
@@ -67,8 +74,10 @@ class User():
         dbop=UserDB()
         dbop.selectByName(attrs,name)
         result=dbop.get()
-        if len(result)==1:
+        if len(result)==1 :
             self.set(result[0])
+        elif len(result)==0:
+            pass
         else:raise ValueError("class User error in function getFromDBByName ")
         
 #更新用户信息----------------------------------------------------------
@@ -316,6 +325,8 @@ class SuperUser(User):
             self.updateUser()
         elif self.id>=0 and self.state=="classattrs":
             pass
+        elif self.state=="login":
+            pass
         else:raise ValueError("unexpected delete class SuperUser in function __del__")
         super().__del__()
 
@@ -359,8 +370,13 @@ class NormalUser(User):
         super().__init__(nid,state)
 
     def __del__(self):
-        if self.id==-1 and self.state=="create":
-            self.insertUser()
+        if self.id>=0 and self.state=="select":
+            pass
+        elif self.state=="login":
+            pass
+        elif self.state=="create":
+            if self.id==-1:
+                self.insertUser()
         elif self.id>=0 and self.state=="update":
             self.updateUser()
         elif self.id>=0 and self.state=="delete":

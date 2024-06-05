@@ -1,5 +1,5 @@
 from entity.db import LocationDB
-from event_band.utils import exist
+import event_band.utils as utils
 
 class Location():
 #初始化函数---------------------------------------------------
@@ -38,7 +38,7 @@ class Location():
         
 #从类中获得属性-------------------------------------------------------         
     def get(self,attr_list):
-        if exist(attr_list):
+        if utils.exist(self,attr_list):
             return [getattr(self,attr) for attr in attr_list]
         else:raise ValueError("class Location lack attributes in function get")
     
@@ -54,12 +54,14 @@ class Location():
         result=dbop.get()
         if len(result)==1:
             self.set(result[0])
+        elif len(result)==0:
+            pass
         else:raise ValueError("Location getFromDB Error")
             
 #超级用户新增场地----------------------------------------------------------
     def addLocation(self):
         dbop=LocationDB()
-        if exist(["firstname","name","description","capacity","type"]):
+        if utils.exist(self,["firstname","name","description","capacity","type"]):
             dbop.insertNewLocation(self.id,self.firstname,self.name,self.description,self.capacity,self.type)
         else:raise ValueError("class Location lack attributes in function addlocation")
 
