@@ -6,6 +6,7 @@ from django.http import JsonResponse
 import event_band.utils as utils
 import pymysql
 from entity.user import User,SuperUser
+from entity.event import Event,PrivateEvent,PublicEvent
 
 
 def create_private_event(request):
@@ -92,6 +93,18 @@ def delete_event(request):
         return JsonResponse({"code":1, "removeOk": True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"deleteEventError:"+str(e)})
-    
-def share_event():
-    pass
+
+def get_invite_code(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        temp_event=PrivateEvent(data["eventId"])
+        if request.userid != temp_event.get(["id"])[0]:
+            return JsonResponse({"code":1, "isCreator": False})
+        
+        result=temp_event.get_invite_code()
+        return JsonResponse({"code":1, "isCreator": True, "inviteCode":result})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"getInviteCodeError:"+str(e)})
+
+
+        

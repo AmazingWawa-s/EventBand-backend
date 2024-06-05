@@ -105,6 +105,9 @@ class Event():
             if key in self.available:
                 result_dict[key]=value
         return result_dict
+    
+    def get_invite_code(self):
+        pass
 
 
 
