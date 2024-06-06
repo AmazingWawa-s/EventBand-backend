@@ -86,7 +86,6 @@ def load_event_page(request):
         temp_event=PrivateEvent(data["eventId"],"select")
         participants=temp_event.get(["participants"])[0]
         eventdetail=temp_event.get(["detail"])[0]
-        
         # 参与者列表：包括用户id和名称
     
         result={
@@ -112,4 +111,66 @@ def update_event_detail(request):
     except Exception as e:
         return JsonResponse({"code":0,"msg":"updateEventDetailError:"+str(e)})
 
+def invite(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        code=utils.generate_invite_id(data["eventId"])
         
+
+
+        return JsonResponse({"code":1, "inviteCode":code})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"inviteError:"+str(e)})
+
+def join_event(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        event_id=utils.get_id(data["inviteCode"])
+        if event_id == -1:
+            return JsonResponse({"code":1, "msg":"Invalid Invite Code"})
+        
+        temp_event=PrivateEvent(event_id,"join")
+        
+     
+        
+        result=temp_event.join_event(event_id,request.userid)
+        if result == 0:
+            return JsonResponse({"code":1, "msg":"Already joined"})
+        elif result==2:
+            return JsonResponse({"code":1, "msg":"event already full"})
+        
+
+
+        return JsonResponse({"code":1, "ValidInviteCode":True,"joinOk":True})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"joinError:"+str(e)})
+   
+def withdraw_event(request):
+    try:
+        uid=request.userid
+        data = json.loads(request.body.decode("utf-8"))
+        temp_event=PrivateEvent(data["eventId"],"select")
+
+        if temp_event.get(["creator_id"])[0]==uid:
+            return JsonResponse({"code":1, "msg":"creator can't withdraw, use delete","withdrawOk":False})
+        elif uid not in temp_event.get(["par_id"])[0]:
+            return JsonResponse({"code":1, "msg":"not in event","withdrawOk":False})
+        
+        Event.delete_participant(uid,data["eventId"])
+
+        return JsonResponse({"code":1, "withdrawOk":True})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"withdrawError:"+str(e)})  
+
+def delete_participant(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        temp_event=PrivateEvent(data["eventId"],"select")
+        if temp_event.get(["creator_id"])[0] != request.userid:
+            return JsonResponse({"code":1, "msg":"only creator can delete participant","deleteOk":False})
+        
+        Event.delete_participant(data["userId"],data["eventId"])
+
+        return JsonResponse({"code":1, "deleteOk":True})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"deleteParticipantError:"+str(e)})            

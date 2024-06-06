@@ -71,6 +71,8 @@ class EventDB(DB):
         self.cursor.execute("select distinct eu.eurelation_user_id,u.user_name from eurelation eu left join user u on eu.eurelation_user_id=u.user_id where eu.eurelation_event_id ="+str(id)+' and eu.eurelation_role="'+str(role)+'"')
     def selectEUByUserId(self,attrs,id):
         self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_user_id ="+str(id))
+    def selectEU(self,eid,uid):
+        self.cursor.execute("select distinct * from eurelation where eurelation_event_id="+str(eid)+" and eurelation_user_id="+str(uid))
     
     def insertEU(self,event_id,user_id,role):
         self.cursor.execute("insert into eurelation (eurelation_event_id,eurelation_user_id,eurelation_role) values(%s,%s,%s)",[event_id,user_id,role])
@@ -105,14 +107,16 @@ class EventDB(DB):
         self.cursor.execute("delete from eurelation where eurelation_event_id=%s and eurelation_role='creator'",event_id)
         self.conn.commit()
     def deleteEUByUserId(self,user_id):
-        self.cursor.execute("delete from eurelation where eurelation_user_id=%s and eurelation_role=1",user_id)
+        self.cursor.execute("delete from eurelation where eurelation_user_id=%s and eurelation_role='creator",user_id)
+        self.conn.commit()
+    def deleteEUByUserEvent(self,uid,eid):
+        self.cursor.execute("delete from eurelation where eurelation_user_id=%s and eurelation_event_id=%s and eurelation_role='participant'",[uid,eid])
         self.conn.commit()
     def insertEventDetail(self,eid):
         self.cursor.execute("insert into event_detail (event_id) values(%s)",eid)
         self.conn.commit()
     def selectEventDetailById(self,eid):
         self.cursor.execute("select * from event_detail where event_id=%s",eid)
-        
         
 class LocationDB(DB):
     def __init__(self):

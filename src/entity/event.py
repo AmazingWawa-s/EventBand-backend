@@ -16,11 +16,15 @@ class Event():
         # self.participants:list = []#参与到这个活动的人
         self.type=-1
         self.available=["id","creator_id","name","start","end","location_id","description","type"]#允许与数据库交互的属性
-        self.detail_available=["participants_num","budget","reim_id","signup_time"]
+        self.detail_available=["person_now","budget","reim_id","signup_time","person_max"]
         if self.id>=0 and self.state=="select":
             self.getFromDB("*")
             self.participants:list = []
+            self.par_id:list=[]
             self.getFromEUDB()
+            self.detail={}
+            self.getFromEventDetail()
+        elif self.state=="join":
             self.detail={}
             self.getFromEventDetail()
         elif self.state=="update":
@@ -40,6 +44,8 @@ class Event():
             self.updateEventDetail()
         elif self.state=="select":
             pass
+        elif self.state=="join":
+            self.updateEventDetail()
         else :raise ValueError("unexpected delete class Event in function __del__")
 
 #从类中获得属性-------------------------------------------------------   
@@ -71,8 +77,9 @@ class Event():
         dbop.selectEUByEventId(self.id,"participant")
         result=dbop.get()
         if utils.exist(self,["participants"]):
+            self.participants=result
             for i in result:
-                self.participants.append()
+                self.par_id.append(i["eurelation_user_id"])
         else:raise ValueError("class Event lack attributes in function getFromEUDB")
     def getFromEventDetail(self):
         dbop=EventDB()
@@ -134,7 +141,26 @@ class Event():
             return "participant"
         else:
             return "undefined"
-       
+
+    def join_event(self,event_id,user_id):
+
+        if self.detail["event_person_now"]==self.detail["event_person_max"]:
+            return 2
+
+        dbop=EventDB()
+        dbop.selectEU(event_id,user_id)
+        res=dbop.get()
+        if len(res)>0:
+            return 0
+
+        dbop.insertEU(event_id,user_id,"participant")
+        self.detail["event_person_now"]=self.detail["event_person_now"]+1
+        return 1
+    
+    @staticmethod
+    def delete_participant(uid,eid):
+        dbop=EventDB()
+        dbop.deleteEUByUserEvent(uid,eid)
 
 
 

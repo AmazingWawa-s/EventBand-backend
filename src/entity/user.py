@@ -108,7 +108,6 @@ class User():
                 self.created_event_id.append(i["event_id"])
             elif i["eurelation_role"]=="participant":
                 self.participated_event_id.append(i["event_id"])
-        print(self.created_event_id)
         
     
     def getEventsFromDB(self):

@@ -121,15 +121,53 @@ def is_json(r):
     except Exception as e:
         return False
     
-def generate_invite_id(id):
-    prefix = hex(int(id))[2:]+ 'L'
+import string
+import random
+
+m={"A":12,"B":4,"C":2,"D":19,"E":25,"F":1}
+option=["A","B","C","D"]
+weight=[167,607,41,233,73,449,197,401,521,1979,1999,641,101,157,61,71,211,7]
+def generate_invite_id(id,length=10):
+    a=random.choice(option)
+    prefix = hex(id+m[a])[2:]+a
     length = length - len(prefix)
     chars=string.ascii_letters+string.digits
-    return prefix + ''.join([random.choice(chars) for i in range(length)])
+    result=prefix + ''.join([random.choice(chars) for i in range(length)])
+    
+    result=result[::-1]
+    
+    result=valid(result)+result[3:]
+    return result
 
 def get_id(code):
-    ''' Hex to Dec '''
-    return str(int(code.upper(), 16))
+    if valid(code)!=code[0:3]:
+        return -1
+    ori=code[::-1]
+    temp=""
+    for i in code:
+        if i.isupper():
+            temp=i
+    a=ori.split(temp)[0]
+    return int(a, 16)-m[temp]
+def valid(strin):
+    num=0
+    for i in range(3,len(strin)):
+        num=num+ord(strin[i])*weight[i]
+    a=num%26
+    b=(num%10)%26
+    c=num%10
+    
+    return chr(65+a)+chr(97+b)+chr(48+c)
+
+
+s_set = string.ascii_letters + string.digits
+raw_code_len = 8
+
+tid=20
+res=generate_invite_id(tid,10)
+print(res)
+
+print(get_id(res))
 
 
 #检查类的实例中是否存在ls中的所有属性-------------------------------------------
