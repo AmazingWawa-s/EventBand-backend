@@ -22,6 +22,7 @@ class Event():
             self.participants:list = []
             self.getFromEUDB()
             self.detail={}
+            self.getFromEventDetail()
         elif self.state=="update":
             pass
         elif self.id==-1 and self.state=="create":
