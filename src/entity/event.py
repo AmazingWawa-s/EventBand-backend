@@ -20,6 +20,9 @@ class Event():
         if self.id>=0 and self.state=="select":
             self.getFromDB("*")
             self.participants:list = []
+            self.getFromEUDB()
+            self.detail={}
+            self.getFromEventDetail()
         elif self.state=="update":
             pass
         elif self.id==-1 and self.state=="create":
@@ -64,13 +67,23 @@ class Event():
     def getFromEUDB(self):
         # 获取参加者id
         dbop=EventDB()
-        dbop.selectEUByEventId("eurelation_user_id",self.id)
+        dbop.selectEUByEventId(self.id)
         result=dbop.get()
         if utils.exist(self,["participants"]):
             for i in result:
-                participant_id=i["eurelation_user_id"]
-                self.participants.append(participant_id)
+                self.participants.append(i)
         else:raise ValueError("class Event lack attributes in function getFromEUDB")
+    def getFromEventDetail(self):
+        dbop=EventDB()
+        dbop.selectEventDetailById(self.id)
+        result=dbop.get()
+        
+        if len(result)==1:
+            self.detail=result[0]
+        elif len(result)==0:
+            raise ValueError("EventId Not Exist")
+        else :raise ValueError("Event getFromDB Error")
+        
 
 #向event库中增加此活动的信息-------------------------------------------------------   
     def insertEvent(self):
@@ -126,8 +139,9 @@ class Event():
     
     def get_invite_code(self):
         pass
-
-
+    def getParticipants(self):
+        dbop=EventDB()
+        
 
 
 

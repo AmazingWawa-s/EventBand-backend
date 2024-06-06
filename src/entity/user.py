@@ -186,6 +186,7 @@ class User():
         temp_event.set({"event_id":eid,"event_name":dit["name"],"event_start":datestr+":"+str(startnum),"event_end":datestr+":"+str(endnum),"event_location_id":dit["location_id"],"event_description":dit["description"],"event_type":1,"event_creator_id":uid})
         edbop.insertEU(eid,uid,"creator")
         edbop.insertEL(eid,dit["location_id"],datestr,startnum,endnum)
+        edbop.insertEventDetail(eid)
         return True
             
     def matchEventLocation(self):
