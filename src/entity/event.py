@@ -67,11 +67,11 @@ class Event():
     def getFromEUDB(self):
         # 获取参加者id
         dbop=EventDB()
-        dbop.selectEUByEventId(self.id)
+        dbop.selectEUByEventId(self.id,"participant")
         result=dbop.get()
         if utils.exist(self,["participants"]):
             for i in result:
-                self.participants.append(i)
+                self.participants.append()
         else:raise ValueError("class Event lack attributes in function getFromEUDB")
     def getFromEventDetail(self):
         dbop=EventDB()

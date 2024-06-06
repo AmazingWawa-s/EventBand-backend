@@ -66,9 +66,9 @@ class EventDB(DB):
         self.cursor.execute("select eu.eurelation_role,eu.eurelation_user_id,eb.* from eurelation eu left join event_brief eb on eu.eurelation_event_id=eb.event_id where eu.eurelation_user_id ="+str(id))
         
     def selectEUByUserIdRole(self,attrs,id,role):
-        self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_user_id ="+str(id)+" and eurelation_role="+role)
-    def selectEUByEventId(self,id):
-        self.cursor.execute("select distinct eu.eurelation_user_id,u.* from eurelation eu left join user u on eu.user_id=u.user_id where eu.eurelation_event_id ="+str(id))
+        self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_user_id ="+str(id)+' and eurelation_role="'+role)
+    def selectEUByEventId(self,id,role):
+        self.cursor.execute("select distinct eu.eurelation_user_id,u.user_name from eurelation eu left join user u on eu.eurelation_user_id=u.user_id where eu.eurelation_event_id ="+str(id)+' and eu.eurelation_role="'+str(role)+'"')
     def selectEUByUserId(self,attrs,id):
         self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_user_id ="+str(id))
     
@@ -107,7 +107,7 @@ class EventDB(DB):
         self.cursor.execute("insert into event_detail (event_id) values(%s)",eid)
         self.conn.commit()
     def selectEventDetailById(self,eid):
-        self.cursor.execute("select from event_detail where event_id=%s",eid)
+        self.cursor.execute("select * from event_detail where event_id=%s",eid)
         
         
 class LocationDB(DB):

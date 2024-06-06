@@ -84,8 +84,8 @@ def private_event_detail_page(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
         temp_event=PrivateEvent(data["eventId"],"select")
-        participants=temp_event.get(["participants"])
-        eventdetail=temp_event.get(["detail"])
+        participants=temp_event.get(["participants"])[0]
+        eventdetail=temp_event.get(["detail"])[0]
         
         # 参与者列表：包括用户id和名称
     
@@ -102,6 +102,6 @@ def private_event_detail_page(request):
     
 def delete_participant(request):
     data = json.loads(request.body.decode("utf-8"))
-    
+
 
         
