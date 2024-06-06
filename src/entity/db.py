@@ -88,6 +88,10 @@ class EventDB(DB):
         self.cursor.execute("update event_brief set "+toset+" where event_id="+str(id))
         #self.cursor.execute("update user set (%s) where user_id=%s",(toset,id))
         self.conn.commit()
+    def updateEventDetail(self,id,toset):
+        self.cursor.execute("update event_detail set "+toset+" where event_id="+str(id))
+        #self.cursor.execute("update user set (%s) where user_id=%s",(toset,id))
+        self.conn.commit()
     def getLastEventId(self):
         self.cursor.execute("select event_id from event_brief order by event_id desc limit 1")
 

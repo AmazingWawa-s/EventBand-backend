@@ -80,7 +80,7 @@ def get_invite_code(request):
     except Exception as e:
         return JsonResponse({"code":0,"msg":"getInviteCodeError:"+str(e)})
 
-def private_event_detail_page(request):
+def load_event_page(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
         temp_event=PrivateEvent(data["eventId"],"select")
@@ -98,10 +98,18 @@ def private_event_detail_page(request):
 
         return JsonResponse({"code":1, "data":result})
     except Exception as e:
-        return JsonResponse({"code":0,"msg":"getPrivateEventDetailError:"+str(e)})
+        return JsonResponse({"code":0,"msg":"loadEventPageError:"+str(e)})
     
-def delete_participant(request):
-    data = json.loads(request.body.decode("utf-8"))
+def update_event_detail(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        temp_event=PrivateEvent(data["eventId"],"update")
+        temp_event.set(data["eventDetail"])
+        
 
+
+        return JsonResponse({"code":1, "updateDetailOk":True})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"updateEventDetailError:"+str(e)})
 
         

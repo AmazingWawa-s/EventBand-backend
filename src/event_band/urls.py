@@ -25,7 +25,8 @@ urlpatterns = [
     path("createevent/private/",ev.create_private_event),
     path("userpage/",ev.load_user_page),
     path("deleteevent/",ev.delete_event),
-    path("eventdetail/",ev.private_event_detail_page)
+    path("eventdetail/",ev.load_event_page),
+    path("updatedetail/",ev.update_event_detail)
 ]
 
 

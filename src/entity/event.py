@@ -16,7 +16,7 @@ class Event():
         # self.participants:list = []#参与到这个活动的人
         self.type=-1
         self.available=["id","creator_id","name","start","end","location_id","description","type"]#允许与数据库交互的属性
-   
+        self.detail_available=["participants_num","budget","reim_id","signup_time"]
         if self.id>=0 and self.state=="select":
             self.getFromDB("*")
             self.participants:list = []
@@ -37,6 +37,7 @@ class Event():
         elif self.state=="update":
             # 更新
             self.updateEvent()
+            self.updateEventDetail()
         elif self.state=="select":
             pass
         else :raise ValueError("unexpected delete class Event in function __del__")
@@ -113,6 +114,15 @@ class Event():
         sq=sq[:-2]
         dbop.updateEvent(self.id,sq)
 
+    def updateEventDetail(self):
+        dbop=EventDB()
+        dct=vars(self)
+        sq=""
+        for attr,value in dct.items():
+            if attr in self.detail_available:
+                sq+=('event_'+attr+'="'+str(value)+'", ')
+        sq=sq[:-2]
+        dbop.updateEventDetail(self.id,sq)
 
     def get_user_role(self,user_id):
         dbop=EventDB()
