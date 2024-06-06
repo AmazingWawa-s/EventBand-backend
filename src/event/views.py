@@ -85,16 +85,15 @@ def private_event_detail_page(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
         temp_event=PrivateEvent(data["eventId"],"select")
-        result={}
+        participants=temp_event.get(["participants"])
+        eventdetail=temp_event.get(["detail"])
         
         # 参与者列表：包括用户id和名称
-        participant_list=[]
-        for participant_id in temp_event.get(["participants"])[0]:
-            temp_dict={}
-            temp_dict["id"]=participant_id
-            temp_dict["name"]=User(participant_id).get(["name"])[0]
-            participant_list.append(temp_dict)
-        result["participants"]=participant_list
+    
+        result={
+            "participants":participants,
+            "eventdetail":eventdetail
+        }
 
         return JsonResponse({"code":1, "data":result})
     except Exception as e:

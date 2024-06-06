@@ -67,8 +67,8 @@ class EventDB(DB):
         
     def selectEUByUserIdRole(self,attrs,id,role):
         self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_user_id ="+str(id)+" and eurelation_role="+role)
-    def selectEUByEventId(self,attrs,id):
-        self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_event_id ="+str(id))
+    def selectEUByEventId(self,id):
+        self.cursor.execute("select distinct eu.eurelation_user_id,u.* from eurelation eu left join user u on eu.user_id=u.user_id where eu.eurelation_event_id ="+str(id))
     def selectEUByUserId(self,attrs,id):
         self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_user_id ="+str(id))
     
@@ -103,7 +103,13 @@ class EventDB(DB):
     def deleteEUByUserId(self,user_id):
         self.cursor.execute("delete from eurelation where eurelation_user_id=%s and eurelation_role=1",user_id)
         self.conn.commit()
-          
+    def insertEventDetail(self,eid):
+        self.cursor.execute("insert into event_detail (event_id) values(%s)",eid)
+        self.conn.commit()
+    def selectEventDetailById(self,eid):
+        self.cursor.execute("select from event_detail where event_id=%s",eid)
+        
+        
 class LocationDB(DB):
     def __init__(self):
         super().__init__()
