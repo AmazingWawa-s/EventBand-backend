@@ -113,7 +113,7 @@ def super_login(request):
 
 def get_all_locations(request):
     try:
-        result=User.getAllLocations()
+        result,tempmap=User.getAllLocations()
         return JsonResponse({"code":1,"data":result})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"getAllLocationsError:"+str(e)})
@@ -130,7 +130,7 @@ def add_location(request):
             "location_type":data["locationType"],
         }
         result=user.add_location(location_dict)
-        if result is None:
+        if result is False:
             return JsonResponse({"code":1,"NameDuplicated":True,"addLocationOk":False})
         
         return JsonResponse({"code":1,"addLocationOk":True})

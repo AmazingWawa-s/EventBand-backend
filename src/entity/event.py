@@ -53,11 +53,11 @@ class Event():
     def getFromDB(self,attrs:str):
         dbop=EventDB()
         dbop.selectById(attrs,self.id)
-        result=dbop.get()        
+        result=dbop.get()       
         if len(result)==1:
             self.set(result[0])
         elif len(result)==0:
-            pass
+            raise ValueError("EventId Not Exist")
         else :raise ValueError("Event getFromDB Error")
     
 #从eurelation库中获得参加此活动的人-------------------------------------------------------   
@@ -138,9 +138,10 @@ class PrivateEvent(Event):
 
     def to_dict(self) -> dict:
         # 前端接口
-        temp_dict = {
-            "eventName":self.name,
-        }
+        temp_dict={}
+        for key,value in vars(self).items():
+            if key in self.available:
+                temp_dict[key]=value
         return temp_dict
 
  

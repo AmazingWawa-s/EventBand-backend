@@ -23,12 +23,12 @@ class UserDB(DB):
     def selectById(self,attrs,id):
         self.cursor.execute("select "+ attrs +" from user where user_id ="+str(id))
     def selectByName(self,attrs,name):
-        self.cursor.execute("select "+ attrs +" from user where user_name ="+str(name))
+        self.cursor.execute("select "+ attrs +' from user where user_name ="'+str(name)+'"')
     def select(self,attrs,nid):
         if type(nid) is int:
             self.cursor.execute("select "+ attrs +" from user where user_id ="+str(nid))
         elif type(nid) is str:
-            self.cursor.execute("select "+ attrs +" from user where user_name ="+nid)
+            self.cursor.execute("select "+ attrs +' from user where user_name ="'+nid+'"')
     def selectAll(self,attrs):
         self.cursor.execute("select * from user where user_name =%s")
 
@@ -54,7 +54,7 @@ class EventDB(DB):
     def checkCollision3(self,location,date,start,end):
         self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id=%s and elrelation_start<=%s and elrelation_end>=%s",[date,location,start,end])
     def selectAllEvents(self):
-        self.cursor.execute("select * from event_brief")
+        self.cursor.execute("select eb.*,lo.location_firstname,lo.location_name from event_brief eb left join location lo on eb.event_location_id=lo.location_id")
     def selectById(self,attrs,id):
         self.cursor.execute("select "+ attrs +" from event_brief where event_id ="+str(id))
     def selectByIdsJoinLocation(self,ids):

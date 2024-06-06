@@ -43,7 +43,7 @@ def load_user_page(request):
         tempuser=User(request.userid,"select")
         result_events=tempuser.getEvents()
         
-        result_locations=[i.to_dict() for i in User.getAllLocations()]
+        result_locations=tempuser.getLocations()
 
         
         res["eventlist"]=result_events
@@ -59,14 +59,14 @@ def get_all_events(request):
         result=su.getAllEvents()
         return JsonResponse({"code":1,"data":result}) 
     except Exception as e:
-        return JsonResponse({"code":0,"msg":"getAllEventsError"+str(e)})
+        return JsonResponse({"code":0,"msg":"getAllEventsError:"+str(e)})
 
 
 
 
 def delete_event(request):
     try:
-        user = User(request.userid,"select")
+        user = User(request.userid,"delete")
         data = json.loads(request.body.decode("utf-8"))
         user.delete_event(data["eventId"])
         return JsonResponse({"code":1, "removeOk": True})
@@ -85,7 +85,7 @@ def private_event_detail_page(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
         temp_event=PrivateEvent(data["eventId"],"select")
-        result=temp_event.to_dict()
+        result={}
         
         # 参与者列表：包括用户id和名称
         participant_list=[]
@@ -95,9 +95,6 @@ def private_event_detail_page(request):
             temp_dict["name"]=User(participant_id).get(["name"])[0]
             participant_list.append(temp_dict)
         result["participants"]=participant_list
-
-        # 用户在活动中的身份
-        result["role"]=temp_event.get_user_role(request.userid)
 
         return JsonResponse({"code":1, "data":result})
     except Exception as e:

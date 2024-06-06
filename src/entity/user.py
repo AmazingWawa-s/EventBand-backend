@@ -16,24 +16,25 @@ class User():
         elif type(nid) is int and self.state=="delete":#删除用户
             self.id=nid
             self.authority=-1
+            self.created_event_id=[]
+            self.participated_event_id=[]
             self.getFromDBById("user_authority",self.id)
+            self.getRelatedEvents()
         elif type(nid) is int and self.state=="update":#更新用户
             self.id=nid
             self.getFromDBById("user_authority,user_password",self.id)
         elif type(nid) is int and self.state=="select":#查询数据
             self.id=nid
             self.getFromDBById("*",self.id)
-            self.created_event_id=[]
-            self.participated_event_id=[]
             self.events=self.getEventsFromDB()
+            self.locations,self.locationmap=User.getAllLocations()
+            self.matchEventLocation()
         elif type(nid) is str and self.state=="create":#创建用户
             self.name=nid
             self.password=""
             self.id=-1
             self.authority=1
-            print(11)
             self.getFromDBByName("user_id,user_authority",self.name)
-            print(22)
         elif type(nid) is str and self.state=="login":#用户登录
             self.name=nid
             self.id=-1
@@ -94,19 +95,29 @@ class User():
 #获取与用户有关的活动-----------------------------------------------------
     def getEvents(self):
         return self.events
+    def getLocations(self):
+        return self.locations
+    
+    def getRelatedEvents(self):
+        dbop=EventDB()
+        dbop.selectEUByUser(self.id)
+        result=dbop.get()
+
+        for i in result:
+            if i["eurelation_role"]=="creator":
+                self.created_event_id.append(i["event_id"])
+            elif i["eurelation_role"]=="participant":
+                self.participated_event_id.append(i["event_id"])
+        print(self.created_event_id)
+        
     
     def getEventsFromDB(self):
         dbop=EventDB()
         dbop.selectEUByUser(self.id)
         result=dbop.get()
         
-        for i in result:
-            if i["eurelation_role"]=="creator":
-                self.created_event_id.append(i["eurelation_user_id"])
-            elif i["eurelation_role"]=="participant":
-                self.participated_event_id.append(i["eurelation_user_id"])
-        
         return result
+    
     def get_created_event(self):
         dbop=EventDB()
         dbop.selectEUByUserIdRole("eurelation_event_id",self.id,1)
@@ -172,12 +183,14 @@ class User():
         
         temp_event = PrivateEvent(-1,"create")
         eid=utils.return_current_event_id(1)
-        temp_event.set({"event_id":eid,"event_name":dit["name"],"event_start":datestr+":"+str(startnum),"event_end":datestr+":"+str(endnum),"event_location_id":dit["location_id"],"event_description":dit["description"],"event_type":1,"event_creator_id":self.id})
+        temp_event.set({"event_id":eid,"event_name":dit["name"],"event_start":datestr+":"+str(startnum),"event_end":datestr+":"+str(endnum),"event_location_id":dit["location_id"],"event_description":dit["description"],"event_type":1,"event_creator_id":uid})
         edbop.insertEU(eid,uid,"creator")
         edbop.insertEL(eid,dit["location_id"],datestr,startnum,endnum)
         return True
             
-            
+    def matchEventLocation(self):
+        for event in self.events:
+            event["event_location_name"]=self.locationmap[event["event_location_id"]]
         
         
         
@@ -233,6 +246,7 @@ class User():
         dbop.selectAllLocations("*")
         dbresult=dbop.get()
         result = []
+        locationmap={}
         current_firstname = None
         current_list = []
         for i in dbresult:
@@ -240,7 +254,8 @@ class User():
             name=i["location_name"]
             capacity=i["location_capacity"]
             id=i["location_id"]
-            description=i["description"]
+            description=i["location_description"]
+            locationmap[id]=firstname+name
             if firstname != current_firstname:
                 if current_firstname is not None:
                     result.append({
@@ -264,7 +279,7 @@ class User():
                 "list": current_list
             })
         
-        return result
+        return result,locationmap
         
 
     def get_all_locations(self):
@@ -311,7 +326,7 @@ class SuperUser(User):
     def __init__(self,nid,state):
         super().__init__(nid,state)
         if "authority" not in vars(self).keys():
-            raise ValueError("expected authority")
+            raise ValueError("expect authority")
         
         if self.authority != 0:
             raise ValueError("not superuser")
@@ -344,10 +359,15 @@ class SuperUser(User):
         dbop.selectAllEvents()
         return dbop.get()
     
-    def add_location(self,location_dict):
+    def add_location(self,location_dict) -> bool:
+        dbop=LocationDB()
+        dbop.selectLocationByFullName("location_id",location_dict["location_firstname"],location_dict["location_name"])
+        if len(dbop.get())>0:
+            return False
         new_location=Location(-1,"create")
         new_location.set(location_dict)
         new_location.set({"location_id":utils.return_current_location_id(1)})
+        return True
         
 #超级用户删除场地----------------------------------------------------------
     def delete_location(self,location_id):
