@@ -63,7 +63,6 @@ def get_all_events(request):
 
 
 
-
 def delete_event(request):
     try:
         user = User(request.userid,"delete")
@@ -96,7 +95,14 @@ def private_event_detail_page(request):
             participant_list.append(temp_dict)
         result["participants"]=participant_list
 
+
+
         return JsonResponse({"code":1, "data":result})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"getPrivateEventDetailError:"+str(e)})
+    
+def delete_participant(request):
+    data = json.loads(request.body.decode("utf-8"))
+    
+
         
