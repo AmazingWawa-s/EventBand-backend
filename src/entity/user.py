@@ -164,29 +164,32 @@ class User():
         
         datestr=str(year)+"-"+str(month)+"-"+str(day)
         
-        edbop.checkCollision1(dit["location_id"],datestr,startnum,endnum)
-        result=edbop.get()
-        if len(result)>=1:
-            return False
+        for location in dit["location_id"]:
+            flag=1
+            edbop.checkCollision1(location,datestr,startnum,endnum)
+            result=edbop.get()
+            if len(result)>=1:
+                flag=0
+            
+            edbop.checkCollision2(location,datestr,startnum,endnum)
+            result=edbop.get()
+            if len(result)>=1:
+                flag=0
+            
+            edbop.checkCollision3(location,datestr,startnum,endnum)
+            result=edbop.get()
+            if len(result)>=1:
+                flag=0
         
-        edbop.checkCollision2(dit["location_id"],datestr,startnum,endnum)
-        result=edbop.get()
-        if len(result)>=1:
-            return False
-        
-        edbop.checkCollision3(dit["location_id"],datestr,startnum,endnum)
-        result=edbop.get()
-        if len(result)>=1:
-            return False
-        
-        
-        temp_event = PrivateEvent(-1,"create")
-        eid=utils.return_current_event_id(1)
-        temp_event.set({"event_id":eid,"event_name":dit["name"],"event_start":datestr+":"+str(startnum),"event_end":datestr+":"+str(endnum),"event_location_id":dit["location_id"],"event_description":dit["description"],"event_type":1,"event_creator_id":uid})
-        edbop.insertEU(eid,uid,"creator")
-        edbop.insertEL(eid,dit["location_id"],datestr,startnum,endnum)
-        edbop.insertEventDetail(eid)
-        return True
+            if flag==1:
+                temp_event = PrivateEvent(-1,"create")
+                eid=utils.return_current_event_id(1)
+                temp_event.set({"event_id":eid,"event_name":dit["name"],"event_start":datestr+":"+str(startnum),"event_end":datestr+":"+str(endnum),"event_location_id":location,"event_description":dit["description"],"event_type":1,"event_creator_id":uid})
+                edbop.insertEU(eid,uid,"creator")
+                edbop.insertEL(eid,location,datestr,startnum,endnum)
+                edbop.insertEventDetail(eid)
+                return 1,eid
+        return 0,-1
             
     def matchEventLocation(self):
         for event in self.events:
@@ -194,8 +197,11 @@ class User():
         
         
         
-        
-        
+    @staticmethod    
+    def get_public_event():
+        dbop=EventDB()
+        dbop.selectPublicEvents()
+        return dbop.get()
 
         
 

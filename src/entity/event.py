@@ -88,6 +88,7 @@ class Event():
         
         if len(result)==1:
             self.detail=result[0]
+            self.set(result[0])
         elif len(result)==0:
             raise ValueError("EventId Not Exist")
         else :raise ValueError("Event getFromDB Error")
@@ -144,7 +145,7 @@ class Event():
 
     def join_event(self,event_id,user_id):
 
-        if self.detail["event_person_now"]==self.detail["event_person_max"]:
+        if self.person_now>=self.person_max:
             return 2
 
         dbop=EventDB()
@@ -154,13 +155,15 @@ class Event():
             return 0
 
         dbop.insertEU(event_id,user_id,"participant")
-        self.detail["event_person_now"]=self.detail["event_person_now"]+1
+        self.person_now=self.person_now+1
         return 1
     
     @staticmethod
     def delete_participant(uid,eid):
         dbop=EventDB()
         dbop.deleteEUByUserEvent(uid,eid)
+        temp_event=PrivateEvent(eid,"join")
+        temp_event.person_now=temp_event.person_now-1
 
 
 

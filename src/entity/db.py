@@ -55,6 +55,8 @@ class EventDB(DB):
         self.cursor.execute("select elrelation_id from elrelation where elrelation_date=%s and elrelation_location_id=%s and elrelation_start<=%s and elrelation_end>=%s",[date,location,start,end])
     def selectAllEvents(self):
         self.cursor.execute("select eb.*,lo.location_firstname,lo.location_name from event_brief eb left join location lo on eb.event_location_id=lo.location_id")
+    def selectPublicEvents(self):
+        self.cursor.execute("select eb.*,lo.location_firstname,lo.location_name from event_brief eb left join location lo on eb.event_location_id=lo.location_id where eb.event_type=0")
     def selectById(self,attrs,id):
         self.cursor.execute("select "+ attrs +" from event_brief where event_id ="+str(id))
     def selectByIdsJoinLocation(self,ids):
@@ -113,7 +115,7 @@ class EventDB(DB):
         self.cursor.execute("delete from eurelation where eurelation_user_id=%s and eurelation_event_id=%s and eurelation_role='participant'",[uid,eid])
         self.conn.commit()
     def insertEventDetail(self,eid):
-        self.cursor.execute("insert into event_detail (event_id) values(%s)",eid)
+        self.cursor.execute("insert into event_detail (event_id,event_person_now) values(%s,0)",eid)
         self.conn.commit()
     def selectEventDetailById(self,eid):
         self.cursor.execute("select * from event_detail where event_id=%s",eid)

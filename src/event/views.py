@@ -26,10 +26,10 @@ def create_private_event(request):
             "location_id":data["eventLocationId"],
             "description":data["eventDescription"],
         }
-        s=User.create_private_event(request.userid,temp_dict)
-        if s==True:
-            return JsonResponse({"code":1,"create_Event_Ok":True})
-        elif s==False:
+        s,eid=User.create_private_event(request.userid,temp_dict)
+        if s==1:
+            return JsonResponse({"code":1,"create_Event_Ok":True,"create_Event_Id":eid})
+        elif s==0:
             return JsonResponse({"code":1,"create_Event_Ok":False,"time_collision":True})
         
     except Exception as e:
@@ -42,9 +42,7 @@ def load_user_page(request):
         
         tempuser=User(request.userid,"select")
         result_events=tempuser.getEvents()
-        
         result_locations=tempuser.getLocations()
-
         
         res["eventlist"]=result_events
         res["locationlist"]=result_locations
@@ -130,14 +128,14 @@ def join_event(request):
             return JsonResponse({"code":1, "msg":"Invalid Invite Code"})
         
         temp_event=PrivateEvent(event_id,"join")
-        
-     
-        
+
         result=temp_event.join_event(event_id,request.userid)
+
         if result == 0:
             return JsonResponse({"code":1, "msg":"Already joined"})
         elif result==2:
             return JsonResponse({"code":1, "msg":"event already full"})
+        temp_event.__del__()
         
 
 
@@ -174,3 +172,13 @@ def delete_participant(request):
         return JsonResponse({"code":1, "deleteOk":True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"deleteParticipantError:"+str(e)})            
+    
+def select_public_event(request):
+    try:
+        result=User.get_public_event()
+        
+
+
+        return JsonResponse({"code":1, "data":result})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"selectPublicEventError:"+str(e)}) 

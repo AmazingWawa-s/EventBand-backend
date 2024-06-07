@@ -14,6 +14,7 @@ urlpatterns = [
     path("logoff/",uv.remove),
     path("getlocations/",uv.get_all_locations),
     path("loaduserpage/",ev.load_user_page),
+    path("empty/",uv.empty),
 
     # su
     path("superlogin/",uv.super_login),
@@ -30,7 +31,8 @@ urlpatterns = [
     path("joinevent/",ev.join_event),
     path("invite/",ev.invite),
     path("withdraw/",ev.withdraw_event),
-    path("deleteparticipant/",ev.delete_participant)
+    path("deleteparticipant/",ev.delete_participant),
+    path("publicevents/",ev.select_public_event)
 ]
 
 

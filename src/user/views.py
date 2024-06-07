@@ -7,6 +7,14 @@ from event_band.settings import EXPIRE_TIME
 import time
 from entity.user import SuperUser,NormalUser,User
 
+def empty(request):
+    try:
+       
+        return JsonResponse({"code":1,"msg":"tokenOk"})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"emptyError:"+str(e)})
+
+
 #注册
 def register(request):
     try:
