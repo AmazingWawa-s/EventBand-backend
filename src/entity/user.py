@@ -117,43 +117,8 @@ class User():
         
         return result
     
-    def get_created_event(self):
-        dbop=EventDB()
-        dbop.selectEUByUserIdRole("eurelation_event_id",self.id,1)
-        event_ids=dbop.get()
-        if len(event_ids)==0:
-            return []
-
-        ids=""
-        for i in event_ids:
-            ids+='"'
-            ids+=str(i["eurelation_event_id"])
-            ids+='", '
-        ids=ids[:-2]
-        dbop.selectByIdsJoinLocation(ids)
-        result=dbop.get()
-        for i in result:
-            pass
-        return result
-    
-    def get_participated_event(self):
-        dbop=EventDB()
-        dbop.selectEUByUserIdRole("eurelation_event_id",self.id,0)
-        event_ids=dbop.get()
-        if len(event_ids)==0:
-            return []
-
-        ids=""
-        for i in event_ids:
-            ids+='"'
-            ids+=str(i["eurelation_event_id"])
-            ids+='", '
-        ids=ids[:-2]
-
-        dbop.selectByIdsJoinLocation(ids)
-        return dbop.get()
     @staticmethod
-    def create_private_event(uid,dit:dict):
+    def createPrivateEvent(uid,dit:dict):
         
         edbop=EventDB()
         year,month,day=dit["start_date"]["year"],dit["start_date"]["month"],dit["start_date"]["day"]
@@ -198,38 +163,13 @@ class User():
         
         
     @staticmethod    
-    def get_public_event():
+    def getPublicEvent():
         dbop=EventDB()
         dbop.selectPublicEvents()
         return dbop.get()
 
-        
-
-        
-
-        
-        
     
-    def create_public_event(self,event_dict:dict):
-        temp_event = PublicEvent(-1,"create")
-        eid=utils.return_current_event_id(1)
-        temp_event.set({"event_id":eid})
-        temp_event.set(self,event_dict)
-    
-        #更新活动简略表
-        #sql_data = temp_event.get(["id","start_time","end_time","name","location","description","type"])
-        #cursor.execute("insert into event_brief (event_id,event_start,event_end,event_name,event_location,event_description,event_type) values (%s,%s,%s,%s,%s,%s,%s)",sql_data)
-        #更新活动详细信息表
-        #sql_data=temp_event.get(["id","creator_id"])
-        #cursor.execute("insert into eurelation (eurelation_event_id,eurelation_user_id,eurelation_role) values(%s,%s,1)",sql_data)
-        #更新活动用户关系表
-        #sql_data=temp_event.get(["id","creator_id"])
-        #cursor.execute("insert into eurelation (eurelation_event_id,eurelation_user_id,eurelation_role) values(%s,%s,1)",sql_data)
-        connection.commit()
-        
-        return temp_event  
-    
-    def delete_event(self,event_id):
+    def deleteEvent(self,event_id):
         dbop=EventDB()
         if event_id not in self.created_event_id:
             raise ValueError("Only creator can delete event")
@@ -238,13 +178,6 @@ class User():
         dbop.deleteEUByEventId(event_id)
         dbop.deleteEventById(event_id)
 
-    def update_event(self):
-        pass
-
-    def get_all_locations_id(self):
-        dbop=LocationDB()
-        dbop.selectAllLocations("location_id")
-        return dbop.get()
     
     @staticmethod
     def getAllLocations():
@@ -288,42 +221,6 @@ class User():
         return result,locationmap
         
 
-    def get_all_locations(self):
-        ids=self.get_all_locations_id()
-        location_list=[Location(i["location_id"],"select") for i in ids]
-            # 处理结果
-        result = []
-        current_firstname = None
-        current_list = []
-        
-        for location in location_list:
-            firstname, name, capacity, id,description = location.get(["firstname","name","capacity","id","description"])
-            
-            if firstname != current_firstname:
-                if current_firstname is not None:
-                    result.append({
-                        "firstname": current_firstname,
-                        "list": current_list
-                    })
-                current_firstname = firstname
-                current_list = []
-            
-            current_list.append({
-                "name": name,
-                "size": capacity,
-                "id": id,
-                "description":description
-            })
-        
-        # 最后一个一级地点
-        if current_firstname is not None:
-            result.append({
-                "firstname": current_firstname,
-                "list": current_list
-            })
-        
-        return result
-
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------
 #类分界线 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------- 
@@ -356,7 +253,7 @@ class SuperUser(User):
         # 广播消息
         pass
 
-    def check_event(self):
+    def checkEvent(self):
         # 活动审核
         pass
     
@@ -365,7 +262,7 @@ class SuperUser(User):
         dbop.selectAllEvents()
         return dbop.get()
     
-    def add_location(self,location_dict) -> bool:
+    def addLocation(self,location_dict) -> bool:
         dbop=LocationDB()
         dbop.selectLocationByFullName("location_id",location_dict["location_firstname"],location_dict["location_name"])
         if len(dbop.get())>0:
@@ -376,11 +273,11 @@ class SuperUser(User):
         return True
         
 #超级用户删除场地----------------------------------------------------------
-    def delete_location(self,location_id):
+    def deleteLocation(self,location_id):
         dbop=LocationDB()
         dbop.deleteLocationById(location_id)
         
-    def update_location(self,location_dict,location_id):
+    def updateLocation(self,location_dict,location_id):
         temp_location=Location(location_id,"update")
         temp_location.set(location_dict)
     
@@ -429,11 +326,8 @@ class NormalUser(User):
         dbop=UserDB()
         dbop.insertNewUser(self.name,self.password)
 
-    def get_all_normal_users(self):
-        pass
 
-
-    def sign_up_event(self):
+    def signupEvent(self):
         # 报名活动
         pass
 

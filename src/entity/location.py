@@ -67,22 +67,13 @@ class Location():
 
 
 #将此地点的与数据库有关的属性变成字典------------------------------------------
-    def to_dict(self) -> dict:
+    def toDict(self) -> dict:
         # 前端接口
         result_dict = {}
         for key,value in vars(self).items():
             if key in self.available:
                 result_dict[key]=value
         return result_dict
-
-
-
-
-
-
-class SuperLocation(Location):
-    def __init__(self, id, state):
-        super().__init__(id, state)
     
 
 

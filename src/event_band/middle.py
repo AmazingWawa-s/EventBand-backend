@@ -27,7 +27,7 @@ class AuthorizeMiddleware(MiddlewareMixin):
                 decode_token=jwt.decode(token,SECRET_KEY,algorithms="HS256")
                 exp_time=int(decode_token["my_exp"])
                 if time.time() >exp_time:
-                    return JsonResponse({'code': 1, 'msg': 'token out of date1'})
+                    return JsonResponse({'code': 1, 'msg': 'token out of date'})
                 else :
                     
                     request.userid=decode_token["userId"]

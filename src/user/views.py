@@ -9,7 +9,6 @@ from entity.user import SuperUser,NormalUser,User
 
 def empty(request):
     try:
-       
         return JsonResponse({"code":1,"msg":"tokenOk"})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"emptyError:"+str(e)})
@@ -137,7 +136,7 @@ def add_location(request):
             "location_capacity":data["locationCapacity"],
             "location_type":data["locationType"],
         }
-        result=user.add_location(location_dict)
+        result=user.addLocation(location_dict)
         if result is False:
             return JsonResponse({"code":1,"NameDuplicated":True,"addLocationOk":False})
         
@@ -149,7 +148,7 @@ def delete_location(request):
     try:
         user = SuperUser(request.userid,"classattrs")
         data = json.loads(request.body.decode("utf-8"))
-        user.delete_location(data["locationId"])
+        user.deleteLocation(data["locationId"])
         return JsonResponse({"code":1,"removeOk":True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"deleteLocationError:"+str(e)})

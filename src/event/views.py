@@ -26,7 +26,7 @@ def create_private_event(request):
             "location_id":data["eventLocationId"],
             "description":data["eventDescription"],
         }
-        s,eid=User.create_private_event(request.userid,temp_dict)
+        s,eid=User.createPrivateEvent(request.userid,temp_dict)
         if s==1:
             return JsonResponse({"code":1,"create_Event_Ok":True,"create_Event_Id":eid})
         elif s==0:
@@ -65,7 +65,7 @@ def delete_event(request):
     try:
         user = User(request.userid,"delete")
         data = json.loads(request.body.decode("utf-8"))
-        user.delete_event(data["eventId"])
+        user.deleteEvent(data["eventId"])
         return JsonResponse({"code":1, "removeOk": True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"deleteEventError:"+str(e)})
@@ -129,10 +129,10 @@ def join_event(request):
         
         temp_event=PrivateEvent(event_id,"join")
 
-        result=temp_event.join_event(event_id,request.userid)
+        result=temp_event.joinEvent(event_id,request.userid)
 
         if result == 0:
-            return JsonResponse({"code":1, "msg":"Already joined"})
+            return JsonResponse({"code":1, "msg":"Already joined","eventId":event_id})
         elif result==2:
             return JsonResponse({"code":1, "msg":"event already full"})
         temp_event.__del__()
@@ -154,7 +154,7 @@ def withdraw_event(request):
         elif uid not in temp_event.get(["par_id"])[0]:
             return JsonResponse({"code":1, "msg":"not in event","withdrawOk":False})
         
-        Event.delete_participant(uid,data["eventId"])
+        Event.deleteParticipant(uid,data["eventId"])
 
         return JsonResponse({"code":1, "withdrawOk":True})
     except Exception as e:
@@ -167,7 +167,7 @@ def delete_participant(request):
         if temp_event.get(["creator_id"])[0] != request.userid:
             return JsonResponse({"code":1, "msg":"only creator can delete participant","deleteOk":False})
         
-        Event.delete_participant(data["userId"],data["eventId"])
+        Event.deleteParticipant(data["userId"],data["eventId"])
 
         return JsonResponse({"code":1, "deleteOk":True})
     except Exception as e:

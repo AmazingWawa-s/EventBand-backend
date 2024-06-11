@@ -132,18 +132,8 @@ class Event():
         sq=sq[:-2]
         dbop.updateEventDetail(self.id,sq)
 
-    def get_user_role(self,user_id):
-        dbop=EventDB()
-        dbop.selectEUByUserId("eurelation_role",user_id)
-        result=dbop.get()
-        if result==1:
-            return "creator"
-        elif result==0:
-            return "participant"
-        else:
-            return "undefined"
 
-    def join_event(self,event_id,user_id):
+    def joinEvent(self,event_id,user_id):
 
         if self.person_now>=self.person_max:
             return 2
@@ -159,7 +149,7 @@ class Event():
         return 1
     
     @staticmethod
-    def delete_participant(uid,eid):
+    def deleteParticipant(uid,eid):
         dbop=EventDB()
         dbop.deleteEUByUserEvent(uid,eid)
         temp_event=PrivateEvent(eid,"join")
@@ -168,7 +158,7 @@ class Event():
 
 
 #将此活动的与数据库有关的属性变成字典-------------------------------------------------------   
-    def to_dict(self) -> dict:
+    def toDict(self) -> dict:
         # 前端接口
         result_dict = {}
         for key,value in vars(self).items():
@@ -176,10 +166,6 @@ class Event():
                 result_dict[key]=value
         return result_dict
     
-    def get_invite_code(self):
-        pass
-    def getParticipants(self):
-        dbop=EventDB()
         
 
 
@@ -188,14 +174,6 @@ class PrivateEvent(Event):
     def __init__(self,event_id,state):
         super().__init__(event_id,state)
         self.type=0     # 私有
-
-    def to_dict(self) -> dict:
-        # 前端接口
-        temp_dict={}
-        for key,value in vars(self).items():
-            if key in self.available:
-                temp_dict[key]=value
-        return temp_dict
 
  
 
