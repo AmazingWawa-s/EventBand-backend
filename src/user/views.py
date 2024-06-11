@@ -24,7 +24,7 @@ def register(request):
             return JsonResponse({"code":1,"userNameExist":True})
         
         # 用户名不存在时创建新的用户
-        encode_password=utils.encoder(data["userPassword"])
+        encode_password=utils.Encoder(data["userPassword"])
         tUser.set({"user_password":encode_password,"user_authority":1})
        
         return JsonResponse({"code":1,"userNameExist":False,"register_ok":True})
@@ -42,7 +42,7 @@ def login(request):
             return JsonResponse({"code":1,"userNameExist":False})
         
         # 用户名存在
-        encode_password=utils.encoder(data["userPassword"])
+        encode_password=utils.Encoder(data["userPassword"])
         
         # 密码正确
         if tUser.get(["password"])[0] == encode_password:
@@ -50,7 +50,7 @@ def login(request):
                 "userId":tUser.get(["id"])[0],
                 "my_exp":int(time.time())+EXPIRE_TIME
             }
-            Token=utils.generatetoken(payload)
+            Token=utils.Generate_token(payload)
             #tUser.updateToDB()
             return JsonResponse({"code":1,"userNameExist":True,"userPasswordOk":True,"userToken":Token})
         # 密码错误
@@ -75,7 +75,7 @@ def change_pwd(request):
 
     try:
         data = json.loads(request.body.decode("utf-8"))
-        new_password = utils.encoder(data["userNewPassword"])
+        new_password = utils.Encoder(data["userNewPassword"])
         
         id = request.userid
 
@@ -100,7 +100,7 @@ def super_login(request):
             return JsonResponse({"code":1,"isSuperUser":False,"userNameExist":False})
         
         # 用户名存在
-        encode_password=utils.encoder(data["userPassword"])
+        encode_password=utils.Encoder(data["userPassword"])
         
         # 密码正确
         if sUser.get(["password"])[0] == encode_password:
@@ -108,7 +108,7 @@ def super_login(request):
                 "userId":sUser.get(["id"])[0],
                 "my_exp":int(time.time())+EXPIRE_TIME
             }
-            Token=utils.generatetoken(payload)
+            Token=utils.Generate_token(payload)
             #tUser.updateToDB()
             return JsonResponse({"code":1,"isSuperUser":True,"userNameExist":True,"userPasswordOk":True,"userToken":Token})
         # 密码错误

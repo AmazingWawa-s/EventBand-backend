@@ -32,7 +32,7 @@ urlpatterns = [
     path("invite/",ev.invite),
     path("withdraw/",ev.withdraw_event),
     path("deleteparticipant/",ev.delete_participant),
-    path("publicevents/",ev.select_public_event)
+    path("publicevents/",ev.select_public_events)
 ]
 
 

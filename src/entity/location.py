@@ -38,7 +38,7 @@ class Location():
         
 #从类中获得属性-------------------------------------------------------         
     def get(self,attr_list):
-        if utils.exist(self,attr_list):
+        if utils.Exist(self,attr_list):
             return [getattr(self,attr) for attr in attr_list]
         else:raise ValueError("class Location lack attributes in function get")
     
@@ -61,7 +61,7 @@ class Location():
 #超级用户新增场地----------------------------------------------------------
     def addLocation(self):
         dbop=LocationDB()
-        if utils.exist(self,["firstname","name","description","capacity","type"]):
+        if utils.Exist(self,["firstname","name","description","capacity","type"]):
             dbop.insertNewLocation(self.id,self.firstname,self.name,self.description,self.capacity,self.type)
         else:raise ValueError("class Location lack attributes in function addlocation")
 

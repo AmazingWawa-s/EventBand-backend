@@ -112,7 +112,7 @@ def update_event_detail(request):
 def invite(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
-        code=utils.generate_invite_id(data["eventId"])
+        code=utils.Generate_invite_id(data["eventId"])
         
 
 
@@ -123,7 +123,7 @@ def invite(request):
 def join_event(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
-        event_id=utils.get_id(data["inviteCode"])
+        event_id=utils.Get_id(data["inviteCode"])
         if event_id == -1:
             return JsonResponse({"code":1, "msg":"Invalid Invite Code"})
         
@@ -173,12 +173,9 @@ def delete_participant(request):
     except Exception as e:
         return JsonResponse({"code":0,"msg":"deleteParticipantError:"+str(e)})            
     
-def select_public_event(request):
+def select_public_events(request):
     try:
-        result=User.get_public_event()
-        
-
-
+        result=User.getPublicEvents()
         return JsonResponse({"code":1, "data":result})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"selectPublicEventError:"+str(e)}) 

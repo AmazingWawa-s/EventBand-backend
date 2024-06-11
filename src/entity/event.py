@@ -50,7 +50,7 @@ class Event():
 
 #从类中获得属性-------------------------------------------------------   
     def get(self,attr_list):
-        if utils.exist(self,attr_list):
+        if utils.Exist(self,attr_list):
             return [getattr(self,attr) for attr in attr_list]
         else:raise ValueError("class Event lack attributes in function get")
 
@@ -76,7 +76,7 @@ class Event():
         dbop=EventDB()
         dbop.selectEUByEventId(self.id,"participant")
         result=dbop.get()
-        if utils.exist(self,["participants"]):
+        if utils.Exist(self,["participants"]):
             self.participants=result
             for i in result:
                 self.par_id.append(i["eurelation_user_id"])

@@ -17,7 +17,7 @@ def register(request):
         sql = "insert into user (username,password,phone) values (%s,%s,%s)"
         sql_data = [
             data['username'],
-            utils.encoder(data['password']),
+            utils.Encoder(data['password']),
             data['phone']
         ]
         cursor.execute(sql,sql_data)
@@ -43,7 +43,7 @@ def login(request):
             return JsonResponse({'code':1,'username_ok':False})      
         
         password_db = result[0][0]
-        encoded_password = utils.encoder(data['password'])
+        encoded_password = utils.Encoder(data['password'])
         if password_db == encoded_password:
             # 密码正确
             return JsonResponse({'code':1,'username_ok':True,'password_ok':True,'id':result[0][1]})
@@ -77,14 +77,14 @@ def change_pwd(request):
     try:
         data = json.loads(request.body.decode("utf-8"))   
         cursor.execute("select password from user where id = %s",data['id'])
-        new_password = utils.encoder(data['password'])   
+        new_password = utils.Encoder(data['password'])   
         if new_password == (cursor.fetchall())[0][0]:
             # 新密码和原密码相同
             return JsonResponse({'code':1,'same_password':True})
 
         sql = "update user set password=%s where id=%s"
         sql_data = [
-            utils.encoder(data["password"]),
+            utils.Encoder(data["password"]),
             data['id']
         ]
         cursor.execute(sql,sql_data)

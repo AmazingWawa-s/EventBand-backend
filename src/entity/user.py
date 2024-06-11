@@ -49,7 +49,7 @@ class User():
     
 #从类中获得属性-------------------------------------------------------   
     def get(self,attr_list):
-        if utils.exist(self,attr_list):
+        if utils.Exist(self,attr_list):
             return [getattr(self,attr) for attr in attr_list]
         else:raise ValueError("class User lack attributes in function get")
         
@@ -148,7 +148,7 @@ class User():
         
             if flag==1:
                 temp_event = PrivateEvent(-1,"create")
-                eid=utils.return_current_event_id(1)
+                eid=utils.Return_current_event_id(1)
                 temp_event.set({"event_id":eid,"event_name":dit["name"],"event_start":datestr+":"+str(startnum),"event_end":datestr+":"+str(endnum),"event_location_id":location,"event_description":dit["description"],"event_type":1,"event_creator_id":uid})
                 edbop.insertEU(eid,uid,"creator")
                 edbop.insertEL(eid,location,datestr,startnum,endnum)
@@ -163,7 +163,7 @@ class User():
         
         
     @staticmethod    
-    def getPublicEvent():
+    def getPublicEvents():
         dbop=EventDB()
         dbop.selectPublicEvents()
         return dbop.get()
@@ -269,7 +269,7 @@ class SuperUser(User):
             return False
         new_location=Location(-1,"create")
         new_location.set(location_dict)
-        new_location.set({"location_id":utils.return_current_location_id(1)})
+        new_location.set({"location_id":utils.Return_current_location_id(1)})
         return True
         
 #超级用户删除场地----------------------------------------------------------
