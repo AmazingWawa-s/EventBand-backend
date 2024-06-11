@@ -40,7 +40,7 @@ def Count_event():
         event_id_sema=Semaphore(1)
         
         if len(result)>0:
-            current_event_id=result[0]["event_id"]+1
+            current_event_id=result[0]["examine_event_eid"]+1
             
         else: 
             current_event_id=1
@@ -131,9 +131,8 @@ def Exist(clas,ls):
         if not hasattr(clas,i):
             return False
     return True
-# if __name__=="__main__":
-#     for i in range(10,500,35):
-#         code = generate_invite_id(i)
-#         id_hex = code.split('L')[0]
-#         id  = get_id(id_hex)
-#         print(code,id)
+
+
+def Cal_priority(user_priority,location_capacity,person_num,time_span,days):
+    result = user_priority * location_capacity / person_num / time_span / days * 100
+    return result

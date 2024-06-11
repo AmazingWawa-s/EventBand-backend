@@ -23,15 +23,19 @@ def create_private_event(request):
             "end_time":data["eventEndTime"],
             "start_date":data["eventStartDate"],
             "end_date":data["eventEndDate"],
-            "location_id":data["eventLocationId"],
+            "location":data["eventLocation"],
             "description":data["eventDescription"],
-            "type":data["eventType"]
+            "type":data["eventType"],
+            "person_num":data["personNum"]
         }
-        s,eid=User.createPrivateEvent(request.userid,temp_dict)
+        user=User(request.userid,"classattrs")
+        s,eid=user.createPrivateEvent(temp_dict)
         if s==1:
-            return JsonResponse({"code":1,"create_Event_Ok":True,"create_Event_Id":eid})
+            return JsonResponse({"code":1,"create_Event_Ok":True,"create_Event_Id":eid,"msg":"正常创建"})
         elif s==0:
             return JsonResponse({"code":1,"create_Event_Ok":False,"time_collision":True})
+        elif s==2:
+            return JsonResponse({"code":1,"create_Event_Ok":True,"create_Event_Id":eid,"msg":"抢占成功"})
         
     except Exception as e:
         return JsonResponse({"code":0,"msg":"createPrivateEventError:"+str(e)})

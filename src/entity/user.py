@@ -9,11 +9,11 @@ from entity.db import UserDB,EventDB,LocationDB
 class User():
 #初始化函数---------------------------------
     def __init__(self,nid,state):
-        self.available=["id","name","password","authority"]#允许被保存到数据库中的属性
+        self.available=["id","name","password","authority","priority"]#允许被保存到数据库中的属性
         self.state=state
         if type(nid) is int and self.state=="classattrs":#调用用户包含的类，而不对用户本身的属性修改
             self.id=nid
-            self.getFromDBById("user_authority",self.id)
+            self.getFromDBById("user_authority,user_priority",self.id)
         elif type(nid) is int and self.state=="delete":#删除用户
             self.id=nid
             self.authority=-1
@@ -119,14 +119,12 @@ class User():
         return result
     
         
-
-    
-    @staticmethod
-    def createPrivateEvent(uid,dit:dict):
+    def createPrivateEvent(self,dit:dict):
+        person_num=dit["person_num"]
         
         edbop=EventDB()
         syear,smonth,sday=dit["start_date"]["year"],dit["start_date"]["month"],dit["start_date"]["day"]
-        eyear,emonth,eday=dit["start_date"]["year"],dit["start_date"]["month"],dit["start_date"]["day"]
+        eyear,emonth,eday=dit["end_date"]["year"],dit["end_date"]["month"],dit["end_date"]["day"]
 
         
         
@@ -135,21 +133,39 @@ class User():
 
         start_hour,start_min=dit["start_time"]["hour"],dit["start_time"]["minute"]
 
-        start_time=datetime.time(start_hour,start_min)
+        start_time=start_hour*60+start_min
         end_hour,end_min=dit["end_time"]["hour"],dit["end_time"]["minute"]
-        end_time=datetime.time(end_hour,end_min)
+        end_time=end_hour*60+end_min
         
-        for location in dit["location_id"]:
+        for location in dit["location"]:
             flag=1
-            edbop.checkCollision(location,start_date,end_date,start_time,end_time)
+            edbop.checkCollision(location["id"],start_date,end_date,start_time,end_time)
             result=edbop.get()
             if len(result)>=1:
                 flag=0
+
             if flag==1:
                 eid=utils.Return_current_event_id(1)
-                edbop.insertExamineEvent(eid,dit["name"],location,dit["description"],dit["type"],uid,start_date,end_date,start_time,end_time)
-                return 1,eid
+
+                temp=end_date-start_date
+                event_priority=utils.Cal_priority(self.priority,location["capacity"],person_num,end_time-start_time,temp.days)
+                edbop.checkExamineCollision(location["id"],start_date,end_date,start_time,end_time)
+                res=edbop.get()
+                if len(res)==0:
+                    edbop.insertExamineEvent(eid,dit["name"],location["id"],dit["description"],dit["type"],self.id,start_date,end_date,start_time,end_time,event_priority)
+                    return 1,eid
                 
+                else:
+                    advance_flag=1
+                    for res_dict in res:
+                        if res_dict["examine_event_priority"]<=event_priority:
+                            advance_flag=0
+                            break
+                    if advance_flag == 1:
+                        for re in res:
+                            edbop.deleteExamineEventById(re["examine_event_eid"])
+                        return 2,eid
+
         return 0,-1
             
     def matchEventLocation(self):
@@ -252,7 +268,9 @@ class SuperUser(User):
     def getExamineEvents(self):
         dbop=EventDB()
         dbop.selectAllExamineEvents()
-        return dbop.get()
+
+        result=dbop.get()
+        return result
     
     def examineEvent(self,eid):
         dbop=EventDB()

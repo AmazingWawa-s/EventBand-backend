@@ -47,6 +47,8 @@ class UserDB(DB):
 class EventDB(DB):
     def __init__(self):
         super().__init__()
+    def checkExamineCollision(self,location,start_date,end_date,start_time,end_time):
+        self.cursor.execute("select examine_event_eid,examine_event_priority from examine_event where examine_event_location_id=%s and not examine_event_start_date>%s and not examine_event_end_date<%s and not examine_event_start_time>%s and not examine_event_end_time<%s",[location,end_date,start_date,end_time,start_time])
     def checkCollision(self,location,start_date,end_date,start_time,end_time):
         self.cursor.execute("select elrelation_id from elrelation where elrelation_location_id=%s and not elrelation_start_date>%s and not elrelation_end_date<%s and not elrelation_start_time>%s and not elrelation_end_time<%s",[location,end_date,start_date,end_time,start_time])
     def checkCollision1(self,location,date,start,end):
@@ -123,12 +125,12 @@ class EventDB(DB):
         self.cursor.execute("select * from event_detail where event_id=%s",eid)
 
 
-    def insertExamineEvent(self,eid,name,location_id,description,type,creator_id,start_date,end_date,start_time,end_time):
+    def insertExamineEvent(self,eid,name,location_id,description,type,creator_id,start_date,end_date,start_time,end_time,event_priority):
         sql="insert into examine_event \
             (examine_event_eid,examine_event_name,examine_event_location_id,examine_event_description,  \
-            examine_event_type,examine_event_creator_id,examine_event_start_date,examine_event_end_date,examine_event_start_time,examine_event_end_time) \
-            values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-        self.cursor.execute(sql,[eid,name,location_id,description,type,creator_id,start_date,end_date,start_time,end_time])
+            examine_event_type,examine_event_creator_id,examine_event_start_date,examine_event_end_date,examine_event_start_time,examine_event_end_time,examine_event_priority) \
+            values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+        self.cursor.execute(sql,[eid,name,location_id,description,type,creator_id,start_date,end_date,start_time,end_time,event_priority])
         self.conn.commit()
     def selectAllExamineEvents(self):
         # self.cursor.execute("select eb.*,lo.location_firstname,lo.location_name from event_brief eb left join location lo on eb.event_location_id=lo.location_id")
