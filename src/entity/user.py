@@ -3,7 +3,7 @@ from entity.event import PrivateEvent,PublicEvent,Event
 from entity.location import Location
 from django.db import connection
 import event_band.utils as utils
-from datetime import datetime, timedelta
+import datetime
 
 from entity.db import UserDB,EventDB,LocationDB
 class User():
@@ -117,18 +117,7 @@ class User():
         result=dbop.get()
         
         return result
-    @staticmethod
-    def dateProcess(syear,smonth,sday,eyear,emonth,eday):
-        start_date = datetime(syear, smonth, sday)
-        end_date = datetime(eyear, emonth, eday)
-
-        dates = [start_date.strftime("%Y-%m-%d")]
-        current_date = start_date
-        while current_date < end_date:
-            current_date += timedelta(days=1)
-            dates.append(current_date.strftime("%Y-%m-%d"))
-        return dates
-
+    
         
 
     
@@ -139,46 +128,28 @@ class User():
         syear,smonth,sday=dit["start_date"]["year"],dit["start_date"]["month"],dit["start_date"]["day"]
         eyear,emonth,eday=dit["start_date"]["year"],dit["start_date"]["month"],dit["start_date"]["day"]
 
-        dates=User.dateProcess(syear,smonth,sday,eyear,emonth,eday)
+        
+        
+        start_date = datetime.date(syear, smonth, sday)
+        end_date = datetime.date(eyear, emonth, eday)
 
         start_hour,start_min=dit["start_time"]["hour"],dit["start_time"]["minute"]
-        startnum=start_hour*60+start_min
-        end_hour,end_min=dit["end_time"]["hour"],dit["end_time"]["minute"]
-        endnum=end_hour*60+end_min
-        
 
-        
+        start_time=datetime.time(start_hour,start_min)
+        end_hour,end_min=dit["end_time"]["hour"],dit["end_time"]["minute"]
+        end_time=datetime.time(end_hour,end_min)
         
         for location in dit["location_id"]:
             flag=1
-            for datestr in dates:
-                
-                
-                edbop.checkCollision1(location,datestr,startnum,endnum)
-                result=edbop.get()
-                if len(result)>=1:
-                    flag=0
-                    break
-                
-                edbop.checkCollision2(location,datestr,startnum,endnum)
-                result=edbop.get()
-                if len(result)>=1:
-                    flag=0
-                    break
-                
-                edbop.checkCollision3(location,datestr,startnum,endnum)
-                result=edbop.get()
-                if len(result)>=1:
-                    flag=0
-                    break
-            
+            edbop.checkCollision(location,start_date,end_date,start_time,end_time)
+            result=edbop.get()
+            if len(result)>=1:
+                flag=0
             if flag==1:
-                for datestrin in dates:
-                    eid=utils.Return_current_event_id(1)
-                    edbop.insertExamineEvent(eid,dit["name"],location,dit["description"],dit["type"],uid,datestrin,startnum,endnum)
-
-
-                    return 1,eid
+                eid=utils.Return_current_event_id(1)
+                edbop.insertExamineEvent(eid,dit["name"],location,dit["description"],dit["type"],uid,start_date,end_date,start_time,end_time)
+                return 1,eid
+                
         return 0,-1
             
     def matchEventLocation(self):
@@ -288,21 +259,21 @@ class SuperUser(User):
         dbop.selectExamineEventById(eid)
         result=dbop.get()[0]
         dbop.deleteExamineEventById(eid)
-        print(1)
+        
         temp_event = PrivateEvent(-1,"create")    
-        print(2)       
-        print(result)        
+           
         temp_event.set({"event_id":eid,
                         "event_name":result["examine_event_name"],
-                        "event_start":result["examine_event_date"]+":"+str(result["examine_event_startnum"]),
-                        "event_end":result["examine_event_date"]+":"+str(result["examine_event_endnum"]),
+                        "event_start_date":result["examine_event_start_date"],
+                        "event_end_date":result["examine_event_end_date"],
+                        "event_start_time":result["examine_event_start_time"],
+                        "event_end_time":result["examine_event_end_time"],
                         "event_location_id":result["examine_event_location_id"],
                         "event_description":result["examine_event_description"],
                         "event_type":result["examine_event_type"],
                         "event_creator_id":result["examine_event_creator_id"]})
-        print(3)
         dbop.insertEU(eid,result["examine_event_creator_id"],"creator")
-        dbop.insertEL(eid,result["examine_event_location_id"],result["examine_event_date"],result["examine_event_startnum"],result["examine_event_endnum"])
+        dbop.insertEL(eid,result["examine_event_location_id"],result["examine_event_start_date"],result["examine_event_end_date"],result["examine_event_start_time"],result["examine_event_end_time"])
         dbop.insertEventDetail(eid)
     
     def getAllEvents(self):
