@@ -123,9 +123,6 @@ raw_code_len = 8
 
 tid=20
 res=Generate_invite_id(tid,10)
-print(res)
-
-print(Get_id(res))
 
 
 #检查类的实例中是否存在ls中的所有属性-------------------------------------------

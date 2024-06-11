@@ -14,7 +14,7 @@ class Event():
         # self.location_id = -1
         # self.description=""
         # self.participants:list = []#参与到这个活动的人
-        self.type=-1
+        self.type=0 # 默认私有
         self.available=["id","creator_id","name","start","end","location_id","description","type"]#允许与数据库交互的属性
         self.detail_available=["person_now","budget","reim_id","signup_time","person_max"]
         if self.id>=0 and self.state=="select":

@@ -25,6 +25,7 @@ def create_private_event(request):
             "end_date":data["eventEndDate"],
             "location_id":data["eventLocationId"],
             "description":data["eventDescription"],
+            "type":data["eventType"]
         }
         s,eid=User.createPrivateEvent(request.userid,temp_dict)
         if s==1:
@@ -102,6 +103,7 @@ def update_event_detail(request):
         data = json.loads(request.body.decode("utf-8"))
         temp_event=PrivateEvent(data["eventId"],"update")
         temp_event.set(data["eventDetail"])
+        temp_event.set({"event_type":data["eventType"]})
         
 
 

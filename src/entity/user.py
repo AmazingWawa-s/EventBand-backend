@@ -149,7 +149,7 @@ class User():
             if flag==1:
                 temp_event = PrivateEvent(-1,"create")
                 eid=utils.Return_current_event_id(1)
-                temp_event.set({"event_id":eid,"event_name":dit["name"],"event_start":datestr+":"+str(startnum),"event_end":datestr+":"+str(endnum),"event_location_id":location,"event_description":dit["description"],"event_type":1,"event_creator_id":uid})
+                temp_event.set({"event_id":eid,"event_name":dit["name"],"event_start":datestr+":"+str(startnum),"event_end":datestr+":"+str(endnum),"event_location_id":location,"event_description":dit["description"],"event_type":dit["type"],"event_creator_id":uid})
                 edbop.insertEU(eid,uid,"creator")
                 edbop.insertEL(eid,location,datestr,startnum,endnum)
                 edbop.insertEventDetail(eid)
