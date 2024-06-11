@@ -97,7 +97,7 @@ class EventDB(DB):
         #self.cursor.execute("update user set (%s) where user_id=%s",(toset,id))
         self.conn.commit()
     def getLastEventId(self):
-        self.cursor.execute("select event_id from event_brief order by event_id desc limit 1")
+        self.cursor.execute("select examine_event_eid from examine_event order by examine_event_eid desc limit 1")
 
     def deleteELByEventId(self,eid):
         self.cursor.execute("delete from elrelation where elrelation_event_id=%s",eid)
@@ -119,6 +119,24 @@ class EventDB(DB):
         self.conn.commit()
     def selectEventDetailById(self,eid):
         self.cursor.execute("select * from event_detail where event_id=%s",eid)
+
+
+    def insertExamineEvent(self,eid,name,location_id,description,type,creator_id,date,startnum,endnum):
+        sql="insert into examine_event \
+            (examine_event_eid,examine_event_name,examine_event_location_id,examine_event_description,  \
+            examine_event_type,examine_event_creator_id,examine_event_date,examine_event_startnum,examine_event_endnum) \
+            values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+        self.cursor.execute(sql,[eid,name,location_id,description,type,creator_id,date,startnum,endnum])
+        self.conn.commit()
+    def selectAllExamineEvents(self):
+        # self.cursor.execute("select eb.*,lo.location_firstname,lo.location_name from event_brief eb left join location lo on eb.event_location_id=lo.location_id")
+        self.cursor.execute("select ee.*,lo.location_firstname,lo.location_name from examine_event ee left join location lo on ee.examine_event_location_id=lo.location_id")
+    def selectExamineEventById(self,eid):
+        self.cursor.execute("select ee.*,lo.location_firstname,lo.location_name from examine_event ee left join location lo on ee.examine_event_location_id=lo.location_id where ee.examine_event_eid=%s",eid)
+    def deleteExamineEventById(self,eid):
+        self.cursor.execute("delete from examine_event where examine_event_eid=%s",eid)
+        self.conn.commit()
+
         
 class LocationDB(DB):
     def __init__(self):

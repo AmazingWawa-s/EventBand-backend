@@ -181,3 +181,20 @@ def select_public_events(request):
         return JsonResponse({"code":1, "data":result})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"selectPublicEventError:"+str(e)}) 
+    
+def get_examine_events(request):
+    try:
+        su=SuperUser(request.userid,"classattrs")
+        result=su.getExamineEvents()
+        return JsonResponse({"code":1, "data":result})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"getExamineEventsError:"+str(e)})    
+    
+def examine_event(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        su=SuperUser(request.userid,"classattrs")
+        su.examineEvent(data["eventId"])
+        return JsonResponse({"code":1, "examineOk":True})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"examineEventError:"+str(e)})        
