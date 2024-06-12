@@ -185,4 +185,14 @@ class GroupDB(DB):
         self.cursor.execute("select * from `groups` where group_event_id="+str(eid))
     
     
-    
+class CostremarkDB(DB):
+    def __init__(self):
+        super().__init__()     
+    def selectAllRemarksByEid(self,eid):
+        self.cursor.execute("select * from cost_remark where cr_event_id="+str(eid))
+    def insertRemark(self,toinsert):
+        self.cursor.execute("insert into cost_remark " + toinsert)
+        self.conn.commit()
+    def updateRemark(self,id,toset):
+        self.cursor.execute("update cost_remark set "+toset+" where cr_id="+str(id))
+        self.conn.commit()

@@ -16,7 +16,7 @@ class Event():
         # self.participants:list = []#参与到这个活动的人
         self.type=0 # 默认私有
         self.available=["id","creator_id","name","start_time","end_time","start_date","end_date","location_id","description","type"]#允许与数据库交互的属性
-        self.detail_available=["person_now","budget","reim_id","signup_time","person_max"]
+        self.detail_available=["person_now","budget","cost","signup_time","person_max"]
         if self.id>=0 and self.state=="select":
             self.getFromDB("*")
             self.participants:list = []
@@ -162,6 +162,11 @@ class Event():
         temp_event=PrivateEvent(eid,"join")
         temp_event.person_now=temp_event.person_now-1
 
+    def add_cost(self,cost):
+        if self.budget-self.event_cost < cost:
+            return False
+        self.cost=self.cost + cost
+        return True
 
 
 #将此活动的与数据库有关的属性变成字典-------------------------------------------------------   
