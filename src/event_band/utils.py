@@ -7,16 +7,17 @@ from django.db import connection
 from django.http import JsonResponse
 from entity.user import User
 from entity.semaphore import Semaphore
-from entity.db import EventDB,LocationDB
+from entity.db import EventDB,LocationDB,GroupDB
 import random
 import string
 
 
 current_event_id=0
-event_id_sema=Semaphore(1)
-
 current_location_id=0
+current_group_id=0
+event_id_sema=Semaphore(1)
 location_id_sema=Semaphore(1)
+group_id_sema=Semaphore(1)
 def Encoder(raw):
     md5 = hashlib.md5()
     md5.update(str(raw).encode("utf-8"))
@@ -76,6 +77,29 @@ def Return_current_location_id(num):
     temp=current_location_id
     current_location_id=current_location_id+num
     location_id_sema.V()
+    return temp
+
+def Count_group():
+    global current_group_id
+    global group_id_sema
+    try:
+        dbop=GroupDB()
+        dbop.getLastGroupId()
+        result=dbop.get()
+        group_id_sema=Semaphore(1)
+        if len(result)>0:
+            current_group_id=result[0]["group_id"]+1
+        else: 
+            current_group_id=1
+    except Exception as e: 
+        return JsonResponse({"code":0,"msg":"countGroupError:"+str(e)})
+def Return_current_group_id(num):
+    global current_group_id
+    global group_id_sema
+    group_id_sema.P()
+    temp=current_group_id
+    current_group_id=current_group_id+num
+    group_id_sema.V()
     return temp
     
     

@@ -1,4 +1,4 @@
-from entity.db import UserDB,EventDB
+from entity.db import UserDB,EventDB,GroupDB
 import event_band.utils as utils
 class Event():
 #初始化函数---------------------------------------------------
@@ -24,6 +24,8 @@ class Event():
             self.getFromEUDB()
             self.detail={}
             self.getFromEventDetail()
+            self.groups=self.getEventGroups()
+            
         elif self.state=="join":
             self.detail={}
             self.getFromEventDetail()
@@ -92,7 +94,12 @@ class Event():
         elif len(result)==0:
             raise ValueError("EventId Not Exist")
         else :raise ValueError("Event getFromDB Error")
-        
+#获取此活动的分组信息-------------------------------------------------------  
+    def getEventGroups(self):
+        dbop=GroupDB()
+        dbop.selectEventGroups(self.id)
+        res=dbop.get()
+        return res
 
 #向event库中增加此活动的信息-------------------------------------------------------   
     def insertEvent(self):

@@ -7,6 +7,7 @@ import event_band.utils as utils
 import pymysql
 from entity.user import User,SuperUser
 from entity.event import Event,PrivateEvent,PublicEvent
+from entity.group import Group
 
 #views.py中的函数名均为小写单词加下划线分隔符
 #entity中类的成员函数命名均为第一个单词首字母小写，之后的单词首字母大写，无分割符
@@ -89,11 +90,13 @@ def load_event_page(request):
         temp_event=PrivateEvent(data["eventId"],"select")
         participants=temp_event.get(["participants"])[0]
         eventdetail=temp_event.get(["detail"])[0]
+        eventgroups=temp_event.get(["groups"])[0]
         # 参与者列表：包括用户id和名称
     
         result={
             "participants":participants,
-            "eventdetail":eventdetail
+            "eventdetail":eventdetail,
+            "groups":eventgroups
         }
 
 
@@ -202,3 +205,20 @@ def examine_event(request):
         return JsonResponse({"code":1, "examineOk":True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"examineEventError:"+str(e)})        
+def add_event_group(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        tg=Group(-1,"create")
+        gid=utils.Return_current_group_id(1)
+        tg.set({"group_id":gid,"group_name":data["groupName"],"group_event_id":data["groupEventId"]})
+        return JsonResponse({"code":1, "createGroupOk":True,"groupId":gid})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"addEventGroupError:"+str(e)}) 
+def join_group(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        tg=Group(data["groupId"],"select")
+        tg.joinGroup(data["groupEventId"],data["groupUserId"])
+        return JsonResponse({"code":1, "joinGroupOk":True})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"joinGroupError:"+str(e)}) 

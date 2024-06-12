@@ -34,7 +34,12 @@ urlpatterns = [
     path("deleteparticipant/",ev.delete_participant),
     path("publicevents/",ev.select_public_events),
     path("getexamineevents/",ev.get_examine_events),
-    path("examine/",ev.examine_event)
+    path("examine/",ev.examine_event),
+    
+    
+    # group
+    path("group/add/",ev.add_event_group),
+    path("group/join/",ev.join_group)
 ]
 
 
