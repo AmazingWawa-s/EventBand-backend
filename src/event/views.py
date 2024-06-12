@@ -8,6 +8,7 @@ import pymysql
 from entity.user import User,SuperUser
 from entity.event import Event,PrivateEvent,PublicEvent
 from entity.group import Group
+from entity.costremark import Costremark
 from entity.message import Message
 
 #views.py中的函数名均为小写单词加下划线分隔符
@@ -224,3 +225,37 @@ def join_group(request):
         return JsonResponse({"code":1, "joinGroupOk":True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"joinGroupError:"+str(e)}) 
+    
+def add_cost_remark(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        remark=Costremark(-1,"create")
+        temp_dict={
+            "cr_event_id":data["eventId"],
+            "cr_user_id":data["userId"],
+            "cr_cost":data["cost"],
+            "cr_reason":data["reason"]
+        }
+        remark.set(temp_dict)
+        return JsonResponse({"code":1, "addCostRemarkOk":True})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"addCostRemarkError:"+str(e)}) 
+    
+def get_cost_remarks(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        result=Costremark.getAllRemarks(data["eventId"])
+        return JsonResponse({"code":1, "data":result})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"getCostRemarksError:"+str(e)})     
+    
+def examine_cost_remark(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        remark=Costremark(data["costRemarkId"],"update")
+        remark.set({"cr_passed":data["passed"],"remark":data["remark"]})
+
+        #temp_event=PrivateEvent(data["eventId"],"join")
+        return JsonResponse({"code":1, "examineOk":True})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"examineCostRemarkError:"+str(e)})     

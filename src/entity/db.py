@@ -194,4 +194,14 @@ class MessageDB(DB):
     def selectMessageByUserId(self,attrs,uid):
         self.cursor.execute("select "+attrs+" from message where message_user_id="+str(uid))
     
-    
+class CostremarkDB(DB):
+    def __init__(self):
+        super().__init__()     
+    def selectAllRemarksByEid(self,eid):
+        self.cursor.execute("select * from cost_remark where cr_event_id="+str(eid))
+    def insertRemark(self,toinsert):
+        self.cursor.execute("insert into cost_remark " + toinsert)
+        self.conn.commit()
+    def updateRemark(self,id,toset):
+        self.cursor.execute("update cost_remark set "+toset+" where cr_id="+str(id))
+        self.conn.commit()
