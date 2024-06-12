@@ -47,12 +47,10 @@ def create_private_event(request):
 def load_user_page(request):
     try:
         res={}
-        
         tempuser=User(request.userid,"select")
         result_events=tempuser.getEvents()
         result_locations=tempuser.getLocations()
         todolist=Message.getUserMessage(request.userid)
-        
         res["eventlist"]=result_events
         res["locationlist"]=result_locations
         res["todolist"]=todolist
@@ -95,11 +93,15 @@ def load_event_page(request):
         participants=temp_event.get(["participants"])[0]
         eventdetail=temp_event.get(["detail"])[0]
         eventgroups=temp_event.get(["groups"])[0]
+
+        costremarks=Costremark.getAllRemarks(data["eventId"])
+
         # 参与者列表：包括用户id和名称
     
         result={
             "participants":participants,
             "eventdetail":eventdetail,
+            "costRemarks":costremarks,
             "groups":eventgroups
         }
 
@@ -232,7 +234,7 @@ def add_cost_remark(request):
         remark=Costremark(-1,"create")
         temp_dict={
             "cr_event_id":data["eventId"],
-            "cr_user_id":data["userId"],
+            "cr_user_id":request.userid,
             "cr_cost":data["cost"],
             "cr_reason":data["reason"]
         }
@@ -240,20 +242,13 @@ def add_cost_remark(request):
         return JsonResponse({"code":1, "addCostRemarkOk":True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"addCostRemarkError:"+str(e)}) 
-    
-def get_cost_remarks(request):
-    try:
-        data = json.loads(request.body.decode("utf-8"))
-        result=Costremark.getAllRemarks(data["eventId"])
-        return JsonResponse({"code":1, "data":result})
-    except Exception as e:
-        return JsonResponse({"code":0,"msg":"getCostRemarksError:"+str(e)})     
+
     
 def examine_cost_remark(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
         remark=Costremark(data["costRemarkId"],"update")
-        remark.set({"cr_passed":data["passed"],"remark":data["remark"]})
+        remark.set({"cr_passed":data["passed"],"cr_remark":data["remark"]})
 
         #temp_event=PrivateEvent(data["eventId"],"join")
         return JsonResponse({"code":1, "examineOk":True})

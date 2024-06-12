@@ -28,6 +28,8 @@ urlpatterns = [
     path("deleteevent/",ev.delete_event),
     path("eventdetail/",ev.load_event_page),
     path("updatedetail/",ev.update_event_detail),
+    path("costremark/add/",ev.add_cost_remark),
+    path("costremark/examine/",ev.examine_cost_remark),
     path("joinevent/",ev.join_event),
     path("invite/",ev.invite),
     path("withdraw/",ev.withdraw_event),

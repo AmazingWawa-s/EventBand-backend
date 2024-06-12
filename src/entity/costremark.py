@@ -4,14 +4,15 @@ import event_band.utils as utils
 class Costremark():
 #初始化函数---------------------------------------------------
     def __init__(self,id,state):
-        self.id=id
+        if id!=-1:
+            self.id=id
         self.state=state
         self.available=["id","event_id","user_id","reason","cost","time","passed","remark"]#允许与数据库交互的属性
         if self.state=="select":
             pass
         elif self.state=="update":
-            pass
-        elif self.id==-1 and self.state=="create":
+            self.getEventIdFromDB()
+        elif id==-1 and self.state=="create":
             self.passed="undo"
         else :raise ValueError("unexpected initialize class Costremark")
             
@@ -21,11 +22,11 @@ class Costremark():
             # 新建
             self.insertRemark()
         elif self.state=="update":
-            # 更新
-            self.updateRemark()
+            # 更新 
             temp_event=PrivateEvent(self.event_id,"join")
             if self.passed=="true":
                 temp_event.add_cost(self.cost)
+            self.updateRemark()
 
         elif self.state=="select":
             pass
@@ -68,6 +69,7 @@ class Costremark():
             if attr in self.available:
                 sq+=('cr_'+attr+'="'+str(value)+'", ')
         sq=sq[:-2]
+        print(vars(self))
         dbop.updateRemark(self.id,sq)
 
     @staticmethod
@@ -76,3 +78,11 @@ class Costremark():
         dbop.selectAllRemarksByEid(eid)
         result=dbop.get()
         return result
+    
+    def getEventIdFromDB(self):
+        dbop=CostremarkDB()
+        dbop.selectRemarksById("cr_event_id,cr_cost",self.id)
+        result=dbop.get()
+        print(result)
+        if len(result)>0:
+            self.set({"cr_event_id":result[0]["cr_event_id"],"cr_cost":result[0]["cr_cost"]})

@@ -163,10 +163,7 @@ class Event():
         temp_event.person_now=temp_event.person_now-1
 
     def add_cost(self,cost):
-        if self.budget-self.event_cost < cost:
-            return False
         self.cost=self.cost + cost
-        return True
 
 
 #将此活动的与数据库有关的属性变成字典-------------------------------------------------------   

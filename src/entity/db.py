@@ -205,3 +205,5 @@ class CostremarkDB(DB):
     def updateRemark(self,id,toset):
         self.cursor.execute("update cost_remark set "+toset+" where cr_id="+str(id))
         self.conn.commit()
+    def selectRemarksById(self,attrs,id):
+        self.cursor.execute("select "+attrs+" from cost_remark where cr_id="+str(id))

@@ -15,7 +15,6 @@ class Group():
     def __del__(self):
         if self.state=="create":
             self.insertGroup()
-            print(vars(self))
         elif self.state=="select":
             pass
         else :raise ValueError("class Group delete unexpected")

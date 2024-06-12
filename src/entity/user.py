@@ -115,7 +115,7 @@ class User():
         dbop=EventDB()
         dbop.selectEUByUser(self.id)
         result=dbop.get()
-        
+        print(result)
         return result
     
         
@@ -173,6 +173,8 @@ class User():
     def matchEventLocation(self):
         for event in self.events:
             event["event_location_name"]=self.locationmap[event["event_location_id"]]
+        
+        
         
         
         
