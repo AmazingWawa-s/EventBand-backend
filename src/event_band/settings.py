@@ -28,6 +28,7 @@ EXPIRE_TIME = 30000
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    '*',
     '127.0.0.1',
     "192.168.2.1",
     "192.168.78.220",
@@ -37,12 +38,12 @@ ALLOWED_HOSTS = [
     "192.168.43.67"
 ]
 
-
 # Application definition
 
 INSTALLED_APPS = [
-    "corsheaders",
+    "daphne",
     "channels",
+    "corsheaders",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -50,8 +51,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "user.apps.UserConfig",
-    "event.apps.EventConfig"
-    
+    "event.apps.EventConfig",
+    "chat.apps.ChatConfig"
 ]
 
 MIDDLEWARE = [
@@ -83,9 +84,15 @@ TEMPLATES = [
         },
     },
 ]
-
+ASYNC_MODE = 'django'
 WSGI_APPLICATION = "event_band.wsgi.application"
+ASGI_APPLICATION = 'event_band.asgi.application'
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -183,10 +190,4 @@ CORS_ALLOW_HEADERS = (
 	'Pragma',
 )
 
-ASGI_APPLICATION = 'event_band.asgi.application'
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    },
-}

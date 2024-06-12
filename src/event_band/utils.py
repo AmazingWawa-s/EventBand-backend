@@ -11,6 +11,7 @@ from entity.db import EventDB,LocationDB,GroupDB
 import random
 import string
 
+All_conn_dict={}
 
 current_event_id=0
 current_location_id=0

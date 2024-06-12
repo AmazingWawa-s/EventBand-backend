@@ -11,6 +11,9 @@ from entity.group import Group
 from entity.costremark import Costremark
 from entity.message import Message
 import time
+from chat.consumers import NotificationConsumer
+from event_band.utils import All_conn_dict
+from asgiref.sync import async_to_sync
 
 #views.py中的函数名均为小写单词加下划线分隔符
 #entity中类的成员函数命名均为第一个单词首字母小写，之后的单词首字母大写，无分割符
@@ -259,11 +262,18 @@ def examine_cost_remark(request):
 
 def testtest(request):
     try:
+        data = json.loads(request.body.decode("utf-8"))
         temp_dict={
-            "content":"you get my message!!!!!",
+            "message":"you get my message!!!!!",
             "time":time.asctime()
         }
-        utils.notify_user(request.userid,temp_dict)
+        global All_conn_dict
+        if request.userid in All_conn_dict:
+            print("here!")
+            #All_conn_dict[request.userid].send_notification(temp_dict)
+            async_to_sync(All_conn_dict[request.userid].send_notification)(temp_dict)
+        print(All_conn_dict)
+            #utils.notify_user(request.userid,temp_dict)
 
         return JsonResponse({"code":1, "testtestOk":True})
     except Exception as e:
