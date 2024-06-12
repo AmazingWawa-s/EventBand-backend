@@ -160,3 +160,21 @@ def Exist(clas,ls):
 def Cal_priority(user_priority,location_capacity,person_num,time_span,days):
     result = user_priority * location_capacity / person_num / time_span / days * 100
     return result
+
+
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
+def notify_user(user_id, message_content:dict):
+    message_content["userId"]=user_id
+    message = json.dumps(message_content)
+
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        'notifications',
+        {
+            'type': 'send_notification',
+            'message': message,
+        }
+    )
+

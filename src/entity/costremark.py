@@ -69,7 +69,6 @@ class Costremark():
             if attr in self.available:
                 sq+=('cr_'+attr+'="'+str(value)+'", ')
         sq=sq[:-2]
-        print(vars(self))
         dbop.updateRemark(self.id,sq)
 
     @staticmethod
@@ -83,6 +82,5 @@ class Costremark():
         dbop=CostremarkDB()
         dbop.selectRemarksById("cr_event_id,cr_cost",self.id)
         result=dbop.get()
-        print(result)
         if len(result)>0:
             self.set({"cr_event_id":result[0]["cr_event_id"],"cr_cost":result[0]["cr_cost"]})

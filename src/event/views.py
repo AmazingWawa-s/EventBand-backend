@@ -10,6 +10,7 @@ from entity.event import Event,PrivateEvent,PublicEvent
 from entity.group import Group
 from entity.costremark import Costremark
 from entity.message import Message
+import time
 
 #views.py中的函数名均为小写单词加下划线分隔符
 #entity中类的成员函数命名均为第一个单词首字母小写，之后的单词首字母大写，无分割符
@@ -254,3 +255,16 @@ def examine_cost_remark(request):
         return JsonResponse({"code":1, "examineOk":True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"examineCostRemarkError:"+str(e)})     
+    
+
+def testtest(request):
+    try:
+        temp_dict={
+            "content":"you get my message!!!!!",
+            "time":time.asctime()
+        }
+        utils.notify_user(request.userid,temp_dict)
+
+        return JsonResponse({"code":1, "testtestOk":True})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"testtestError:"+str(e)})       

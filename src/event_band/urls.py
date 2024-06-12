@@ -41,7 +41,9 @@ urlpatterns = [
     
     # group
     path("group/add/",ev.add_event_group),
-    path("group/join/",ev.join_group)
+    path("group/join/",ev.join_group),
+
+    path("test/",ev.testtest)
 ]
 
 

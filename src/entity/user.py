@@ -115,7 +115,6 @@ class User():
         dbop=EventDB()
         dbop.selectEUByUser(self.id)
         result=dbop.get()
-        print(result)
         return result
     
         
