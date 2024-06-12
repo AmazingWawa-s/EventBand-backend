@@ -98,6 +98,8 @@ class EventDB(DB):
         self.cursor.execute("update event_detail set "+toset+" where event_id="+str(id))
         #self.cursor.execute("update user set (%s) where user_id=%s",(toset,id))
         self.conn.commit()
+    def updateEUGroup(self,groupname,eid,uid):
+        self.cursor.execute("update eurelation set eurelation_group_name="+groupname+" where eurelation_event_id="+str(eid)+" and eurelation_user_id="+str(uid))
     def getLastEventId(self):
         self.cursor.execute("select examine_event_eid from examine_event order by examine_event_eid desc limit 1")
 
@@ -165,4 +167,19 @@ class LocationDB(DB):
         self.conn.commit()
     def selectLocationByFullName(self,attrs,firstname,name):
         self.cursor.execute("select "+attrs+' from location where location_firstname="'+str(firstname)+'" and location_name="'+str(name)+'"')
+
+class GroupDB(DB):
+    def __init__(self):
+        super().__init__()
+    def insertGroupDB(self,toinsert):
+        self.cursor.execute("insert into group " + toinsert)
+        self.conn.commit()
+    def getLastGroupId(self):
+        self.cursor.execute("select group_id from group order by group_id desc limit 1")
+    def selectGroupById(self,gid):
+        self.cursor.execute("select * from group where group_id="+str(gid))
+    def selectEventGroups(self,eid):
+        self.cursor.execute("select * from group where group_event_id="+str(eid))
+    
+    
     
