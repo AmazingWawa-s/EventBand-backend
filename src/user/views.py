@@ -6,6 +6,7 @@ import event_band.utils as utils
 from event_band.settings import EXPIRE_TIME
 import time
 from entity.user import SuperUser,NormalUser,User
+from entity.message import Message
 
 def empty(request):
     try:
@@ -51,6 +52,7 @@ def login(request):
                 "my_exp":int(time.time())+EXPIRE_TIME
             }
             Token=utils.Generate_token(payload)
+            a=Message(payload["userId"],"成功登录","a","b","c")
             #tUser.updateToDB()
             return JsonResponse({"code":1,"userNameExist":True,"userPasswordOk":True,"userToken":Token})
         # 密码错误
@@ -152,3 +154,4 @@ def delete_location(request):
         return JsonResponse({"code":1,"removeOk":True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"deleteLocationError:"+str(e)})
+

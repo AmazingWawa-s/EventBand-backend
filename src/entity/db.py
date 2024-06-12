@@ -184,5 +184,14 @@ class GroupDB(DB):
     def selectEventGroups(self,eid):
         self.cursor.execute("select * from `groups` where group_event_id="+str(eid))
     
+
+class MessageDB(DB):
+    def __init__(self):
+        super().__init__()
+    def insertMessageDB(self,toinsert):
+        self.cursor.execute("insert into message " + toinsert)
+        self.conn.commit()
+    def selectMessageByUserId(self,attrs,uid):
+        self.cursor.execute("select "+attrs+" from message where message_user_id="+str(uid))
     
     

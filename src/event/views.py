@@ -8,6 +8,7 @@ import pymysql
 from entity.user import User,SuperUser
 from entity.event import Event,PrivateEvent,PublicEvent
 from entity.group import Group
+from entity.message import Message
 
 #views.py中的函数名均为小写单词加下划线分隔符
 #entity中类的成员函数命名均为第一个单词首字母小写，之后的单词首字母大写，无分割符
@@ -49,9 +50,11 @@ def load_user_page(request):
         tempuser=User(request.userid,"select")
         result_events=tempuser.getEvents()
         result_locations=tempuser.getLocations()
+        todolist=Message.getUserMessage(request.userid)
         
         res["eventlist"]=result_events
         res["locationlist"]=result_locations
+        res["todolist"]=todolist
         return JsonResponse({"code":1, "data": res})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"loadUserPageError:"+str(e)})
