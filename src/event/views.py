@@ -150,7 +150,7 @@ def join_event(request):
 
         return JsonResponse({"code":1, "ValidInviteCode":True,"joinOk":True})
     except Exception as e:
-        return JsonResponse({"code":0,"msg":"joinError:"+str(e)})
+        return JsonResponse({"code":0,"msg":"joinEventError:"+str(e)})
    
 def withdraw_event(request):
     try:
@@ -217,8 +217,7 @@ def add_event_group(request):
 def join_group(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
-        tg=Group(data["groupId"],"select")
-        tg.joinGroup(data["groupEventId"],data["groupUserId"])
+        Group.joinGroup(data["groupId"],data["groupEventId"],data["groupUserId"])
         return JsonResponse({"code":1, "joinGroupOk":True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"joinGroupError:"+str(e)}) 

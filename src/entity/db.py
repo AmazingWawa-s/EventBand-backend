@@ -74,7 +74,7 @@ class EventDB(DB):
     def selectEUByUserIdRole(self,attrs,id,role):
         self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_user_id ="+str(id)+' and eurelation_role="'+role)
     def selectEUByEventId(self,id,role):
-        self.cursor.execute("select distinct eu.eurelation_user_id,u.user_name from eurelation eu left join user u on eu.eurelation_user_id=u.user_id where eu.eurelation_event_id ="+str(id)+' and eu.eurelation_role="'+str(role)+'"')
+        self.cursor.execute("select distinct eu.eurelation_user_id,u.user_name,eu.eurelation_group_id from eurelation eu left join user u on eu.eurelation_user_id=u.user_id where eu.eurelation_event_id ="+str(id)+' and eu.eurelation_role="'+str(role)+'"')
     def selectEUByUserId(self,attrs,id):
         self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_user_id ="+str(id))
     def selectEU(self,eid,uid):
@@ -100,8 +100,9 @@ class EventDB(DB):
         self.cursor.execute("update event_detail set "+toset+" where event_id="+str(id))
         #self.cursor.execute("update user set (%s) where user_id=%s",(toset,id))
         self.conn.commit()
-    def updateEUGroup(self,groupname,eid,uid):
-        self.cursor.execute("update eurelation set eurelation_group_name="+groupname+" where eurelation_event_id="+str(eid)+" and eurelation_user_id="+str(uid))
+    def updateEUGroup(self,groupid,eid,uid):
+        self.cursor.execute('update eurelation set eurelation_group_id='+str(groupid)+' where eurelation_event_id='+str(eid)+" and eurelation_user_id="+str(uid))
+        self.conn.commit()
     def getLastEventId(self):
         self.cursor.execute("select examine_event_eid from examine_event order by examine_event_eid desc limit 1")
 
@@ -174,14 +175,14 @@ class GroupDB(DB):
     def __init__(self):
         super().__init__()
     def insertGroupDB(self,toinsert):
-        self.cursor.execute("insert into group " + toinsert)
+        self.cursor.execute("insert into `groups` " + toinsert)
         self.conn.commit()
     def getLastGroupId(self):
-        self.cursor.execute("select group_id from group order by group_id desc limit 1")
-    def selectGroupById(self,gid):
-        self.cursor.execute("select * from group where group_id="+str(gid))
+        self.cursor.execute("select group_id from `groups` order by group_id desc limit 1")
+    def selectGroupById(self,attrs,gid):
+        self.cursor.execute("select "+attrs+" from `groups` where group_id="+str(gid))
     def selectEventGroups(self,eid):
-        self.cursor.execute("select * from group where group_event_id="+str(eid))
+        self.cursor.execute("select * from `groups` where group_event_id="+str(eid))
     
     
     

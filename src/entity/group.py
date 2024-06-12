@@ -15,6 +15,7 @@ class Group():
     def __del__(self):
         if self.state=="create":
             self.insertGroup()
+            print(vars(self))
         elif self.state=="select":
             pass
         else :raise ValueError("class Group delete unexpected")
@@ -55,9 +56,10 @@ class Group():
         elif len(result)==0:
             raise ValueError("Group doesn't exist")
         else :raise ValueError("Group getFromDB Error")
-    def joinGroup(self,eid,uid):
+    @staticmethod
+    def joinGroup(gid,eid,uid):
         dbop=EventDB()
-        dbop.updateEUGroup(self.name,eid,uid)
+        dbop.updateEUGroup(gid,eid,uid)
         
         
             

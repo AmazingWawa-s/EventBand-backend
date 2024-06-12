@@ -145,13 +145,13 @@ class User():
                 flag=0
 
             if flag==1:
-                eid=utils.Return_current_event_id(1)
 
                 temp=end_date-start_date
                 event_priority=utils.Cal_priority(self.priority,location["capacity"],person_num,end_time-start_time,temp.days)
                 edbop.checkExamineCollision(location["id"],start_date,end_date,start_time,end_time)
                 res=edbop.get()
                 if len(res)==0:
+                    eid=utils.Return_current_event_id(1)
                     edbop.insertExamineEvent(eid,dit["name"],location["id"],dit["description"],dit["type"],self.id,start_date,end_date,start_time,end_time,event_priority)
                     return 1,eid
                 
@@ -164,6 +164,8 @@ class User():
                     if advance_flag == 1:
                         for re in res:
                             edbop.deleteExamineEventById(re["examine_event_eid"])
+                        eid=utils.Return_current_event_id(1)
+                        edbop.insertExamineEvent(eid,dit["name"],location["id"],dit["description"],dit["type"],self.id,start_date,end_date,start_time,end_time,event_priority)
                         return 2,eid
 
         return 0,-1
