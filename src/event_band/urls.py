@@ -57,6 +57,7 @@ urlpatterns = [
     # chat record
     path("chatrecord/event/",cv.get_group_messages),
     path("chatrecord/private/",cv.get_private_messages),
+    path("chatrecord/",cv.get_all_messages),
 
 
     path("test/",ev.testtest)

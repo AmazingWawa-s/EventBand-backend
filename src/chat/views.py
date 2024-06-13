@@ -2,6 +2,7 @@ from entity.event import PrivateEvent
 from event_band.global_vars import All_conn_dict
 from asgiref.sync import async_to_sync
 from entity.message import ChatMessage
+from entity.user import User
 from django.http import JsonResponse
 import json
 
@@ -39,3 +40,13 @@ def get_private_messages(request):
         return JsonResponse({"code":1, "data":result})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"getPrivateMessagesError:"+str(e)})    
+    
+def get_all_messages(request):
+    try:
+        result=ChatMessage.getAllMessages(request.userid)
+
+
+        return JsonResponse({"code":1, "data":result})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"getAllMessagesError:"+str(e)})      
+    

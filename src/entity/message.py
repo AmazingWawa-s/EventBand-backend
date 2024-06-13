@@ -13,10 +13,12 @@ class Message():
         self.available=["time","user_id","content","type","link","detail"]
     def __del__(self):
         self.time=datetime.datetime.now()
-        self.insertMessage()
 
+        self.insertMessage()
         temp_dict=self.toDict()
-        temp_dict["time"]=str(temp_dict["time"])
+
+        origin_time = datetime.datetime.strptime(str(self.time), "%Y-%m-%d %H:%M:%S.%f")
+        temp_dict["message_time"] = origin_time.strftime("%Y-%m-%dT%H:%M:%S")
         
         global All_conn_dict
         if self.user_id in All_conn_dict:
@@ -48,7 +50,7 @@ class Message():
         result_dict = {}
         for key,value in vars(self).items():
             if key in self.available:
-                result_dict[key]=value
+                result_dict["message_"+key]=value
         return result_dict
     
 
@@ -91,4 +93,32 @@ class ChatMessage(Message):
     def getPrivateMessageByUids(my_id,your_id):
         dbop=ChatMessageDB()
         dbop.selectPrivateMessagesByUids("*",my_id,your_id)
-        return dbop.get()            
+        return dbop.get()   
+
+    @staticmethod
+    def getAllMessages(uid):
+        dbop=ChatMessageDB()
+        dbop.selectAllMessages(uid)
+        result=dbop.get()
+
+
+        grouped_chats = {}
+        for row in result:
+            title = row['title']
+            chr_type = row['chr_type']
+            chat_entry = {
+                'chr_time': row['chr_time'],
+                'chr_sender_id': row['chr_sender_id'],
+                'chr_content': row['chr_content']
+            }
+
+            if title not in grouped_chats:
+                grouped_chats[title] = {
+                    'title': title,
+                    'chr_type': chr_type,
+                    'chatlist': []
+                }
+            grouped_chats[title]['chatlist'].append(chat_entry)
+
+        final_output = list(grouped_chats.values())   
+        return final_output      

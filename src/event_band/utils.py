@@ -42,7 +42,7 @@ def Count_event():
         event_id_sema=Semaphore(1)
         
         if len(result)>0:
-            current_event_id=result[0]["examine_event_eid"]+1
+            current_event_id=result[0]["event_id"]+1
             
         else: 
             current_event_id=1
@@ -190,5 +190,5 @@ def Exist(clas,ls):
 
 
 def Cal_priority(user_priority,location_capacity,person_num,time_span,days):
-    result = user_priority * location_capacity / person_num / time_span / days * 100
+    result = user_priority * location_capacity / person_num / time_span / (days+1) * 100
     return result

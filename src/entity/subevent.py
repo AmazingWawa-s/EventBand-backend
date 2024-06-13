@@ -1,7 +1,8 @@
-from entity.db import CostremarkDB
+from entity.db import SubeventDB
 from entity.event import PrivateEvent
 import event_band.utils as utils
-class Costremark():
+
+class Subevent():
 #初始化函数---------------------------------------------------
     def __init__(self,id,state):
         if id!=-1:

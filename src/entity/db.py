@@ -2,7 +2,7 @@ import pymysql
 
 class DB():
     def __init__(self):
-        self.conn=pymysql.connect(host="192.168.43.246",user="sa",password="",db="eventband",port=3306,charset="utf8")
+        self.conn=pymysql.connect(host="192.168.137.75",user="sa",password="",db="eventband",port=3306,charset="utf8")
         self.cursor=self.conn.cursor(cursor=pymysql.cursors.DictCursor)
         #self.conn=connection.connect(host="192.168.43.246",user="sa",password="",db="eventband",port=3306,charset="utf8")
         #self.cursor=connection.cursor()
@@ -48,7 +48,7 @@ class EventDB(DB):
     def __init__(self):
         super().__init__()
     def checkExamineCollision(self,location,start_date,end_date,start_time,end_time):
-        self.cursor.execute("select examine_event_eid,examine_event_priority from examine_event where examine_event_location_id=%s and not examine_event_start_date>%s and not examine_event_end_date<%s and not examine_event_start_time>%s and not examine_event_end_time<%s",[location,end_date,start_date,end_time,start_time])
+        self.cursor.execute("select examine_event_id,examine_event_priority from examine_event where examine_event_location_id=%s and not examine_event_start_date>%s and not examine_event_end_date<%s and not examine_event_start_time>%s and not examine_event_end_time<%s",[location,end_date,start_date,end_time,start_time])
     def checkCollision(self,location,start_date,end_date,start_time,end_time):
         self.cursor.execute("select elrelation_id from elrelation where elrelation_location_id=%s and not elrelation_start_date>%s and not elrelation_end_date<%s and not elrelation_start_time>%s and not elrelation_end_time<%s",[location,end_date,start_date,end_time,start_time])
     def checkCollision1(self,location,date,start,end):
@@ -62,7 +62,7 @@ class EventDB(DB):
     def selectPublicEvents(self):
         self.cursor.execute("select eb.*,lo.location_firstname,lo.location_name from event_brief eb left join location lo on eb.event_location_id=lo.location_id where eb.event_type=1")
     def selectById(self,attrs,id):
-        self.cursor.execute("select eb."+ attrs +",u.user_name as event_creator_name from event_brief eb left join user u on eb.event_creator_id=u.user_id where event_id ="+str(id))
+        self.cursor.execute("select eb."+ attrs +",u.user_name as event_creator_name,lo.location_firstname,lo.location_name from event_brief eb inner join user u on eb.event_creator_id=u.user_id  and eb.event_id="+str(id)+" left join location lo on lo.location_id=eb.event_location_id ")
     def selectByIdsJoinLocation(self,ids):
         self.cursor.execute("select eb.*,lo.location_firstname,lo.location_name from event_brief eb left join location lo on eb.event_location_id=lo.location_id where event_id in (" + ids + ")")
     def selectByIds(self,attrs,ids):
@@ -104,7 +104,7 @@ class EventDB(DB):
         self.cursor.execute('update eurelation set eurelation_group_id='+str(groupid)+' where eurelation_event_id='+str(eid)+" and eurelation_user_id="+str(uid))
         self.conn.commit()
     def getLastEventId(self):
-        self.cursor.execute("select examine_event_eid from examine_event order by examine_event_eid desc limit 1")
+        self.cursor.execute("select event_id from event_brief order by event_id desc limit 1")
 
     def deleteELByEventId(self,eid):
         self.cursor.execute("delete from elrelation where elrelation_event_id=%s",eid)
@@ -128,20 +128,19 @@ class EventDB(DB):
         self.cursor.execute("select * from event_detail where event_id=%s",eid)
 
 
-    def insertExamineEvent(self,eid,name,location_id,description,type,creator_id,start_date,end_date,start_time,end_time,event_priority):
+    def insertExamineEvent(self,name,location_id,description,type,creator_id,start_date,end_date,start_time,end_time,event_priority):
         sql="insert into examine_event \
-            (examine_event_eid,examine_event_name,examine_event_location_id,examine_event_description,  \
+            (examine_event_name,examine_event_location_id,examine_event_description,  \
             examine_event_type,examine_event_creator_id,examine_event_start_date,examine_event_end_date,examine_event_start_time,examine_event_end_time,examine_event_priority) \
-            values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-        self.cursor.execute(sql,[eid,name,location_id,description,type,creator_id,start_date,end_date,start_time,end_time,event_priority])
+            values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+        self.cursor.execute(sql,[name,location_id,description,type,creator_id,start_date,end_date,start_time,end_time,event_priority])
         self.conn.commit()
     def selectAllExamineEvents(self):
-        # self.cursor.execute("select eb.*,lo.location_firstname,lo.location_name from event_brief eb left join location lo on eb.event_location_id=lo.location_id")
         self.cursor.execute("select ee.*,lo.location_firstname,lo.location_name from examine_event ee left join location lo on ee.examine_event_location_id=lo.location_id")
     def selectExamineEventById(self,eid):
-        self.cursor.execute("select ee.*,lo.location_firstname,lo.location_name from examine_event ee left join location lo on ee.examine_event_location_id=lo.location_id where ee.examine_event_eid=%s",eid)
+        self.cursor.execute("select ee.*,lo.location_firstname,lo.location_name from examine_event ee left join location lo on ee.examine_event_location_id=lo.location_id where ee.examine_event_id=%s",eid)
     def deleteExamineEventById(self,eid):
-        self.cursor.execute("delete from examine_event where examine_event_eid=%s",eid)
+        self.cursor.execute("delete from examine_event where examine_event_id=%s",eid)
         self.conn.commit()
 
         
@@ -191,7 +190,7 @@ class MessageDB(DB):
         self.cursor.execute("insert into message " + toinsert)
         self.conn.commit()
     def selectMessageByUserId(self,attrs,uid):
-        self.cursor.execute("select "+attrs+" from message where message_user_id="+str(uid))
+        self.cursor.execute("select "+attrs+" from message where message_user_id="+str(uid)+" order by message_id desc")
 
 class ChatMessageDB(DB):
     def __init__(self):
@@ -207,7 +206,23 @@ class ChatMessageDB(DB):
                             (chr_sender_id="+str(my_id)+" and chr_recv_id="+str(your_id)+") \
                             or (chr_sender_id="+str(your_id)+" and chr_recv_id="+str(my_id)+") \
                             ) order by chr_time" )
-    
+    def selectAllMessages(self,uid):
+        sql = """
+            SELECT
+                IF(chr_type = 0, chr_event_id, chr_recv_id) AS title,
+                chr_type,
+                chr_time,
+                chr_sender_id,
+                chr_content
+            FROM
+                chatrecord
+            WHERE
+                chr_sender_id = %s OR (chr_type = 1 AND chr_recv_id = %s)
+            ORDER BY
+                chr_type, title, chr_time;
+        """
+        self.cursor.execute(sql, [uid, uid])   
+         
 class CommentDB(DB):
     def __init__(self):
         super().__init__()
@@ -215,13 +230,13 @@ class CommentDB(DB):
         self.cursor.execute("insert into comment " + toinsert)
         self.conn.commit()
     def selectCommentByEventId(self,attrs,eid):
-        self.cursor.execute("select "+attrs+" from comment where comment_event_id="+str(eid)+" order by comment_time")
+        self.cursor.execute("select "+attrs+" from comment where comment_event_id="+str(eid)+" order by comment_time desc")
     
 class CostremarkDB(DB):
     def __init__(self):
         super().__init__()     
     def selectAllRemarksByEid(self,eid):
-        self.cursor.execute("select * from cost_remark where cr_event_id="+str(eid))
+        self.cursor.execute("select cr.*,u.user_name as cr_user_name from cost_remark cr inner join user u on cr.cr_user_id=u.user_id where cr_event_id="+str(eid))
     def insertRemark(self,toinsert):
         self.cursor.execute("insert into cost_remark " + toinsert)
         self.conn.commit()

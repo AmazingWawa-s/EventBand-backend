@@ -14,7 +14,7 @@ class User():
         self.state=state
         if type(nid) is int and self.state=="classattrs":#调用用户包含的类，而不对用户本身的属性修改
             self.id=nid
-            self.getFromDBById("user_authority,user_priority",self.id)
+            self.getFromDBById("user_name,user_authority,user_priority",self.id)
         elif type(nid) is int and self.state=="delete":#删除用户
             self.id=nid
             self.authority=-1
@@ -137,6 +137,7 @@ class User():
         end_hour,end_min=dit["end_time"]["hour"],dit["end_time"]["minute"]
         end_time=end_hour*60+end_min
         
+
         for location in dit["location"]:
             flag=1
             edbop.checkCollision(location["id"],start_date,end_date,start_time,end_time)
@@ -151,9 +152,9 @@ class User():
                 edbop.checkExamineCollision(location["id"],start_date,end_date,start_time,end_time)
                 res=edbop.get()
                 if len(res)==0:
-                    eid=utils.Return_current_event_id(1)
-                    edbop.insertExamineEvent(eid,dit["name"],location["id"],dit["description"],dit["type"],self.id,start_date,end_date,start_time,end_time,event_priority)
-                    return 1,eid
+                    edbop.insertExamineEvent(dit["name"],location["id"],dit["description"],dit["type"],self.id,start_date,end_date,start_time,end_time,event_priority)
+                    Message(self.id,'活动 '+dit["name"]+' 申请中',"waiting","","")
+                    return 1
                 
                 else:
                     advance_flag=1
@@ -163,12 +164,16 @@ class User():
                             break
                     if advance_flag == 1:
                         for re in res:
-                            edbop.deleteExamineEventById(re["examine_event_eid"])
-                        eid=utils.Return_current_event_id(1)
-                        edbop.insertExamineEvent(eid,dit["name"],location["id"],dit["description"],dit["type"],self.id,start_date,end_date,start_time,end_time,event_priority)
-                        return 2,eid
+                            edbop.deleteExamineEventById(re["examine_event_id"])
+                            Message(result["examine_event_id"],"活动被驳回！","error","","时间冲突")
+                        edbop.insertExamineEvent(dit["name"],location["id"],dit["description"],dit["type"],self.id,start_date,end_date,start_time,end_time,event_priority)
+                        Message(self.id,'活动 '+dit["name"]+' 申请中',"waiting","","")
+                        return 2
+                    else:
+                        Message(self.id,'活动 '+dit["name"]+' 被驳回！',"error","","时间冲突")
+                        return 0
 
-        return 0,-1
+        return 0
             
     def matchEventLocation(self):
         for event in self.events:
@@ -276,14 +281,14 @@ class SuperUser(User):
         result=dbop.get()
         return result
     
-    def examineEvent(self,eid):
+    def examineEvent(self,examine_id):
         dbop=EventDB()
-        dbop.selectExamineEventById(eid)
+        dbop.selectExamineEventById(examine_id)
         result=dbop.get()[0]
-        dbop.deleteExamineEventById(eid)
+        dbop.deleteExamineEventById(examine_id)
         
         temp_event = PrivateEvent(-1,"create")    
-           
+        eid=utils.Return_current_event_id(1)
         temp_event.set({"event_id":eid,
                         "event_name":result["examine_event_name"],
                         "event_start_date":result["examine_event_start_date"],
@@ -299,6 +304,7 @@ class SuperUser(User):
         dbop.insertEU(eid,result["examine_event_creator_id"],"creator")
         dbop.insertEL(eid,result["examine_event_location_id"],result["examine_event_start_date"],result["examine_event_end_date"],result["examine_event_start_time"],result["examine_event_end_time"])
         dbop.insertEventDetail(eid)
+        Message(result["examine_event_creator_id"],'活动 '+{result["examine_event_name"]}+' 已通过',"link","/eventDetail?id="+str(eid),"event_id:"+str(eid)+" passed by "+self.name)
     
     def getAllEvents(self):
         dbop=EventDB()
@@ -315,14 +321,12 @@ class SuperUser(User):
         new_location.set({"location_id":utils.Return_current_location_id(1)})
         return True
     
-    def denyEvent(self,eid,reason):
+    def denyEvent(self,examine_id,reason):
         dbop=EventDB()
-        dbop.selectExamineEventById(eid)
+        dbop.selectExamineEventById(examine_id)
         result=dbop.get()[0]
-        Message(result["examine_creator_id"],"活动被驳回！","error","",reason)
-
-        dbop.deleteExamineEventById(eid)
-        
+        dbop.deleteExamineEventById(examine_id)
+        Message(result["examine_event_creator_id"],'活动 '+result["examine_event_name"]+' 被驳回！',"error","",reason)
         
 #超级用户删除场地----------------------------------------------------------
     def deleteLocation(self,location_id):

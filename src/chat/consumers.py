@@ -51,9 +51,13 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
 
     async def send_notification(self, dic):
-        dic["backend_send_time"]=time.asctime()
-        await self.send(text_data=json.dumps(dic))
-        print(f'\n\n\nSending notification to id={self.id}: {dic}\n\n\n')
+        result_dic={
+            "type":"notification",
+            "data":dic,
+            "backend_send_time":time.asctime()
+        }
+        await self.send(text_data=json.dumps(result_dic))
+        print(f'\n\nSending notification to id={self.id}: {result_dic}\n\n')
         
 
 
@@ -117,6 +121,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
     async def send_notification(self, dic):
-        dic["backend_send_time"]=time.asctime()
-        print(f'Sending chat to id={self.id}: {dic}')
-        await self.send(text_data=json.dumps(dic))
+        result_dic={
+            "type":"chat",
+            "data":dic,
+            "backend_send_time":time.asctime()
+        }
+        await self.send(text_data=json.dumps(result_dic))
+        print(f'\n\nSending chat to id={self.id}: {result_dic}\n\n')

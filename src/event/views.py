@@ -12,6 +12,7 @@ from entity.costremark import Costremark
 from entity.message import Message
 from entity.resource import Resource
 from entity.comment import Comment
+from entity.subevent import Subevent
 from event_band.global_vars import All_conn_dict
 from asgiref.sync import async_to_sync
 from datetime import datetime
@@ -37,13 +38,13 @@ def create_private_event(request):
             "person_num":data["personNum"]
         }
         user=User(request.userid,"classattrs")
-        s,eid=user.createPrivateEvent(temp_dict)
+        s=user.createPrivateEvent(temp_dict)
         if s==1:
-            return JsonResponse({"code":1,"create_Event_Ok":True,"create_Event_Id":eid,"msg":"正常创建"})
+            return JsonResponse({"code":1,"create_Event_Ok":True,"msg":"正常创建"})
         elif s==0:
             return JsonResponse({"code":1,"create_Event_Ok":False,"time_collision":True})
         elif s==2:
-            return JsonResponse({"code":1,"create_Event_Ok":True,"create_Event_Id":eid,"msg":"抢占成功"})
+            return JsonResponse({"code":1,"create_Event_Ok":True,"msg":"抢占成功"})
         
     except Exception as e:
         return JsonResponse({"code":0,"msg":"createPrivateEventError:"+str(e)})
@@ -130,8 +131,7 @@ def update_event_detail(request):
         if request.userid==utils.checkEventCreator(data["eventId"]):
             temp_event=PrivateEvent(data["eventId"],"update")
             temp_event.set(data["eventDetail"])
-            temp_event.set({"event_type":data["eventType"]})
-            temp_event.set({"event_ready":data["eventReady"]})
+            temp_event.set(data["eventBrief"])
             return JsonResponse({"code":1, "updateDetailOk":True})
         else:
             return JsonResponse({"code":1, "updateDetailOk":False,"msg":"only creator can update event"})
@@ -225,10 +225,10 @@ def examine_event(request):
         data = json.loads(request.body.decode("utf-8"))
         su=SuperUser(request.userid,"classattrs")
         if data["passed"]==True:
-            su.examineEvent(data["eventId"])
+            su.examineEvent(data["examineEventId"])
             return JsonResponse({"code":1, "examineOk":True})
         else:
-            su.denyEvent(data["eventId"],data["reason"])
+            su.denyEvent(data["examineEventId"],data["reason"])
             return JsonResponse({"code":1, "examineOk":False})
 
     except Exception as e:
@@ -259,6 +259,11 @@ def join_group(request):
 def add_cost_remark(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
+        temp_event=PrivateEvent(data["eventId"],"select")
+        temp_event.getFromEUDB()
+        if request.userid not in temp_event.get(["par_id"])[0]:
+            return JsonResponse({"code":1, "addCostRemarkOk":False,"msg":"Only participants can add cost remark"})
+        
         remark=Costremark(-1,"create")
         temp_dict={
             "cr_event_id":data["eventId"],
@@ -267,6 +272,8 @@ def add_cost_remark(request):
             "cr_reason":data["reason"]
         }
         remark.set(temp_dict)
+        creator_id=utils.checkEventCreator(data["eventId"])
+        Message(creator_id,"新的预算报销申请！","link","/eventDetail?id="+data["eventId"],"")
         return JsonResponse({"code":1, "addCostRemarkOk":True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"addCostRemarkError:"+str(e)}) 
@@ -277,7 +284,13 @@ def examine_cost_remark(request):
         data = json.loads(request.body.decode("utf-8"))
         remark=Costremark(data["costRemarkId"],"update")
         remark.set({"cr_passed":data["passed"],"cr_remark":data["remark"]})
-
+        user_id=Costremark.selectUidById(data["costRemarkId"])
+        event_id=Costremark.selectEidById(data["costRemarkId"])
+        if data["passed"]=="true":
+            Message(user_id[0]["cr_user_id"],"预算报销成功！","link","/eventDetail?id="+str(event_id[0]["cr_event_id"]),data["remark"])
+        else:
+            Message(user_id[0]["cr_user_id"],"预算报销被驳回！","link","/eventDetail?id="+str(event_id[0]["cr_event_id"]),data["remark"])
+        print(66)
         #temp_event=PrivateEvent(data["eventId"],"join")
         return JsonResponse({"code":1, "examineOk":True})
     except Exception as e:
@@ -353,4 +366,14 @@ def get_comments(request):
         return JsonResponse({"code":1, "data":result})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"getCommentsError:"+str(e)})    
+    
+
+def add_subevent(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        Subevent(data["eventId"],data["date"],data["time"])
+
+        return JsonResponse({"code":1, "data":result})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"getCommentsError:"+str(e)})       
     
