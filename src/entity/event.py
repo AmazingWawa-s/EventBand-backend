@@ -1,4 +1,4 @@
-from entity.db import UserDB,EventDB,GroupDB
+from entity.db import UserDB,EventDB,GroupDB,ResourceDB
 import event_band.utils as utils
 class Event():
 #初始化函数---------------------------------------------------
@@ -21,13 +21,12 @@ class Event():
             self.getFromDB("*")
             self.participants:list = []
             self.par_id:list=[]
-            self.getFromEUDB()
             self.detail={}
-            self.getFromEventDetail()
-            self.groups=self.getEventGroups()
-            
+            self.groups=[]
+            self.resources=[]
         elif self.state=="join":
             self.detail={}
+            self.getFromDB("*")
             self.getFromEventDetail()
         elif self.state=="update":
             pass
@@ -99,7 +98,13 @@ class Event():
         dbop=GroupDB()
         dbop.selectEventGroups(self.id)
         res=dbop.get()
-        return res
+        self.groups=res
+#获取此活动的资源信息-------------------------------------------------------
+    def getEventResource(self):
+        dbop=ResourceDB()
+        dbop.selectEventResources(self.id)
+        res=dbop.get()
+        self.resources=res
 
 #向event库中增加此活动的信息-------------------------------------------------------   
     def insertEvent(self):

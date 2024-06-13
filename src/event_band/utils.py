@@ -7,7 +7,7 @@ from django.db import connection
 from django.http import JsonResponse
 from entity.user import User
 from entity.semaphore import Semaphore
-from entity.db import EventDB,LocationDB,GroupDB
+from entity.db import EventDB,LocationDB,GroupDB,ResourceDB
 import random
 import string
 
@@ -16,9 +16,11 @@ All_conn_dict={}
 current_event_id=0
 current_location_id=0
 current_group_id=0
+current_resource_id=0
 event_id_sema=Semaphore(1)
 location_id_sema=Semaphore(1)
 group_id_sema=Semaphore(1)
+resource_id_sema=Semaphore(1)
 def Encoder(raw):
     md5 = hashlib.md5()
     md5.update(str(raw).encode("utf-8"))
@@ -102,8 +104,39 @@ def Return_current_group_id(num):
     current_group_id=current_group_id+num
     group_id_sema.V()
     return temp
+
+def Count_resource():
+    global current_resource_id
+    global resource_id_sema
+    try:
+        dbop=ResourceDB()
+        dbop.getLastResourceId()
+        result=dbop.get()
+        resource_id_sema=Semaphore(1)
+        if len(result)>0:
+            current_resource_id=result[0]["resource_id"]+1
+        else: 
+            current_resource_id=1
+    except Exception as e: 
+        return JsonResponse({"code":0,"msg":"countResourceError:"+str(e)})
+def Return_current_resource_id(num):
+    global current_resource_id
+    global resource_id_sema
+    resource_id_sema.P()
+    temp=current_resource_id
+    current_resource_id=current_resource_id+num
+    resource_id_sema.V()
+    return temp
     
-    
+def checkEventCreator(eid):
+        dbop=EventDB()
+        dbop.selectById("event_creator_id",eid)
+        res=dbop.get()
+        if len(res)==0:
+            raise ValueError("Event doesn't exist")
+        elif len(res)==1:
+            return res[0]["event_creator_id"]
+        else:raise ValueError("Error in fun checkEventCreator")
 import string
 import random
 

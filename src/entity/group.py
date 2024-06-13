@@ -29,7 +29,7 @@ class Group():
     def set(self,attr_dict):
         for attr,value in attr_dict.items():
             setattr(self,attr[6:],value)
-    #向event库中增加此活动的信息-------------------------------------------------------   
+    #向groups库中增加此活动的信息-------------------------------------------------------   
     def insertGroup(self):
         dbop=GroupDB()
         dct=vars(self)

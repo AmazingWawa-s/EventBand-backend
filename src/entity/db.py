@@ -160,7 +160,6 @@ class LocationDB(DB):
         self.conn.commit()
     def updateLocation(self,id,toset):
         self.cursor.execute("update location set "+toset+" where location_id="+str(id))
-        #self.cursor.execute("update user set (%s) where user_id=%s",(toset,id))
         self.conn.commit()
     def getLastLocationId(self):
         self.cursor.execute("select location_id from location order by location_id desc limit 1")
@@ -207,3 +206,23 @@ class CostremarkDB(DB):
         self.conn.commit()
     def selectRemarksById(self,attrs,id):
         self.cursor.execute("select "+attrs+" from cost_remark where cr_id="+str(id))
+
+
+class ResourceDB(DB):
+    def __init__(self):
+        super().__init__()   
+    def insertResourceDB(self,toinsert):
+        self.cursor.execute("insert into resource " + toinsert)
+        self.conn.commit()
+    def getLastResourceId(self):
+        self.cursor.execute("select resource_id from resource order by resource_id desc limit 1")
+    def selectResourceById(self,attrs,rid):
+        self.cursor.execute("select "+attrs+" from resource where resource_id="+str(rid))
+    def updateResource(self,id,toset):
+        self.cursor.execute("update resource set "+toset+" where resource_id="+str(id))
+        self.conn.commit()
+    def deleteResourceById(self,rid):
+        self.cursor.execute("delete from resource where resource_id=%s",rid)
+        self.conn.commit()
+    def selectEventResources(self,eid):
+        self.cursor.execute("select * from resource where resource_eid="+str(eid))

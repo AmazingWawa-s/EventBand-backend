@@ -10,6 +10,7 @@ from entity.event import Event,PrivateEvent,PublicEvent
 from entity.group import Group
 from entity.costremark import Costremark
 from entity.message import Message
+from entity.resource import Resource
 import time
 from chat.consumers import NotificationConsumer
 from event_band.utils import All_conn_dict
@@ -82,22 +83,25 @@ def delete_event(request):
     except Exception as e:
         return JsonResponse({"code":0,"msg":"deleteEventError:"+str(e)})
 
-def get_invite_code(request):
-    try:
-        data = json.loads(request.body.decode("utf-8"))
-        result=utils.get_invite_code(data["eventId"])
-        return JsonResponse({"code":1, "inviteCode":result})
-    except Exception as e:
-        return JsonResponse({"code":0,"msg":"getInviteCodeError:"+str(e)})
+
 
 def load_event_page(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
         temp_event=PrivateEvent(data["eventId"],"select")
+        
+        temp_event.getFromEUDB()
         participants=temp_event.get(["participants"])[0]
+        
+        temp_event.getFromEventDetail()
         eventdetail=temp_event.get(["detail"])[0]
+        
+        temp_event.getEventGroups()
         eventgroups=temp_event.get(["groups"])[0]
-
+        
+        temp_event.getEventResource()
+        eventresources=temp_event.get(["resources"])[0]
+        
         costremarks=Costremark.getAllRemarks(data["eventId"])
 
         # 参与者列表：包括用户id和名称
@@ -106,7 +110,8 @@ def load_event_page(request):
             "participants":participants,
             "eventdetail":eventdetail,
             "costRemarks":costremarks,
-            "groups":eventgroups
+            "groups":eventgroups,
+            "resources":eventresources
         }
 
 
@@ -118,47 +123,50 @@ def load_event_page(request):
 def update_event_detail(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
-        temp_event=PrivateEvent(data["eventId"],"update")
-        temp_event.set(data["eventDetail"])
-        temp_event.set({"event_type":data["eventType"]})
-        
-
-
-        return JsonResponse({"code":1, "updateDetailOk":True})
+        if request.userid==utils.checkEventCreator(data["eventId"]):
+            temp_event=PrivateEvent(data["eventId"],"update")
+            temp_event.set(data["eventDetail"])
+            temp_event.set({"event_type":data["eventType"]})
+            return JsonResponse({"code":1, "updateDetailOk":True})
+        else:
+            return JsonResponse({"code":1, "updateDetailOk":False,"msg":"only creator can update event"})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"updateEventDetailError:"+str(e)})
 
 def invite(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
-        code=utils.Generate_invite_id(data["eventId"])
-        
-
-
-        return JsonResponse({"code":1, "inviteCode":code})
+        if request.userid==utils.checkEventCreator(data["eventId"]):
+            code=utils.Generate_invite_id(data["eventId"])
+            return JsonResponse({"code":1, "inviteCode":code})
+        else:
+            return JsonResponse({"code":1, "inviteCode":-1,"msg":"only creator can invite"})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"inviteError:"+str(e)})
 
 def join_event(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
+        
         event_id=utils.Get_id(data["inviteCode"])
         if event_id == -1:
             return JsonResponse({"code":1, "msg":"Invalid Invite Code"})
         
         temp_event=PrivateEvent(event_id,"join")
-
-        result=temp_event.joinEvent(event_id,request.userid)
-
-        if result == 0:
-            return JsonResponse({"code":1, "msg":"Already joined","eventId":event_id})
-        elif result==2:
-            return JsonResponse({"code":1, "msg":"event already full"})
-        temp_event.__del__()
         
+        if temp_event.get(["creator_id"])!=request.userid:
 
+            result=temp_event.joinEvent(event_id,request.userid)
 
-        return JsonResponse({"code":1, "ValidInviteCode":True,"joinOk":True})
+            if result == 0:
+                return JsonResponse({"code":1, "msg":"Already joined","eventId":event_id})
+            elif result==2:
+                return JsonResponse({"code":1, "msg":"event already full"})
+            temp_event.__del__()
+            
+            return JsonResponse({"code":1, "ValidInviteCode":True,"joinOk":True})
+        else:
+            return JsonResponse({"code":1, "ValidInviteCode":True,"joinOk":False})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"joinEventError:"+str(e)})
    
@@ -171,7 +179,7 @@ def withdraw_event(request):
         if temp_event.get(["creator_id"])[0]==uid:
             return JsonResponse({"code":1, "msg":"creator can't withdraw, use delete","withdrawOk":False})
         elif uid not in temp_event.get(["par_id"])[0]:
-            return JsonResponse({"code":1, "msg":"not in event","withdrawOk":False})
+            return JsonResponse({"code":1, "msg":"not in the event","withdrawOk":False})
         
         Event.deleteParticipant(uid,data["eventId"])
 
@@ -218,17 +226,23 @@ def examine_event(request):
 def add_event_group(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
-        tg=Group(-1,"create")
-        gid=utils.Return_current_group_id(1)
-        tg.set({"group_id":gid,"group_name":data["groupName"],"group_event_id":data["groupEventId"]})
-        return JsonResponse({"code":1, "createGroupOk":True,"groupId":gid})
+        if utils.checkEventCreator(data["groupEventId"])==request.userid:
+            tg=Group(-1,"create")
+            gid=utils.Return_current_group_id(1)
+            tg.set({"group_id":gid,"group_name":data["groupName"],"group_event_id":data["groupEventId"]})
+            return JsonResponse({"code":1, "createGroupOk":True,"groupId":gid})
+        else:
+            return JsonResponse({"code":1, "createGroupOk":False,"groupId":-1})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"addEventGroupError:"+str(e)}) 
 def join_group(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
-        Group.joinGroup(data["groupId"],data["groupEventId"],data["groupUserId"])
-        return JsonResponse({"code":1, "joinGroupOk":True})
+        if utils.checkEventCreator(data["groupEventId"])!=request.userid:
+            Group.joinGroup(data["groupId"],data["groupEventId"],data["groupUserId"])
+            return JsonResponse({"code":1, "joinGroupOk":True})
+        else:
+            return JsonResponse({"code":1, "joinGroupOk":False})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"joinGroupError:"+str(e)}) 
     
@@ -278,3 +292,40 @@ def testtest(request):
         return JsonResponse({"code":1, "testtestOk":True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"testtestError:"+str(e)})       
+    
+def add_resource(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        if utils.checkEventCreator(data["resourceEventId"])==request.userid:#只有活动的创建者才能为活动添加资源
+            tr=Resource(-1,"create")
+            rid=utils.Return_current_group_id(1)
+            tr.set({"resource_id":rid,"resource_name":data["resourceName"],"resource_eid":data["resourceEventId"],"resource_condition":data["resourceCondition"],"resource_num":data["resourceNum"]})
+            return JsonResponse({"code":1, "createResourceOk":True,"resourceId":rid})
+        else:
+            return JsonResponse({"code":1, "createResourceOk":False,"msg":"only event's creator can add resource"})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"addResourceError:"+str(e)}) 
+def delete_resource(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        
+        if utils.checkEventCreator(data["eventId"])==request.userid:#只有活动的创建者才能为活动添加资源
+            tr=Resource(data["resourceId"],"delete")
+            return JsonResponse({"code":1, "deleteResourceOk":True})
+        else:
+            return JsonResponse({"code":1, "createResourceOk":False,"msg":"only event's creator can delete resource"})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"deleteResourceError:"+str(e)}) 
+
+def update_resource(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        if utils.checkEventCreator(data["eventId"])==request.userid:#只有活动的创建者才能更新资源
+            tr=Resource(data["resourceId"],"update")
+            tr.set(data["toUpdate"])
+            return JsonResponse({"code":1, "updateResourceOk":True})
+        else:
+            return JsonResponse({"code":1, "updateResourceOk":False,"msg":"only event's creator can update resource"})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"updateResourceError:"+str(e)}) 
+    
