@@ -265,7 +265,6 @@ def testtest(request):
         data = json.loads(request.body.decode("utf-8"))
         temp_dict={
             "message":"you get my message!!!!!",
-            "time":time.asctime()
         }
         global All_conn_dict
         if request.userid in All_conn_dict:

@@ -193,6 +193,21 @@ class MessageDB(DB):
         self.conn.commit()
     def selectMessageByUserId(self,attrs,uid):
         self.cursor.execute("select "+attrs+" from message where message_user_id="+str(uid))
+
+class ChatMessageDB(DB):
+    def __init__(self):
+        super().__init__()
+    def insertMessageDB(self,toinsert):
+        self.cursor.execute("insert into chatrecord " + toinsert)
+        self.conn.commit()
+    def selectGroupMessagesByEId(self,attrs,eid):
+        self.cursor.execute("select "+attrs+" from chatrecord where chr_type=0 and chr_event_id="+str(eid))
+    def selectPrivateMessagesByUids(self,attrs,my_id,your_id):
+        self.cursor.execute("select "+attrs+" from chatrecord where chr_type=1 \
+                            and ( \
+                            (chr_sender_id="+str(my_id)+"and chr_recv_id="+str(your_id)+") \
+                            or (chr_sender_id="+str(your_id)+"and chr_recv_id="+str(my_id)+") \
+                            ) order by chr_time" )
     
 class CostremarkDB(DB):
     def __init__(self):
