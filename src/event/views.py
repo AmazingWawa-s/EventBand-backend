@@ -11,10 +11,10 @@ from entity.group import Group
 from entity.costremark import Costremark
 from entity.message import Message
 from entity.resource import Resource
-import time
-from chat.consumers import NotificationConsumer
-from event_band.utils import All_conn_dict
+from entity.comment import Comment
+from event_band.global_vars import All_conn_dict
 from asgiref.sync import async_to_sync
+from datetime import datetime
 
 #views.py中的函数名均为小写单词加下划线分隔符
 #entity中类的成员函数命名均为第一个单词首字母小写，之后的单词首字母大写，无分割符
@@ -89,6 +89,9 @@ def load_event_page(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
         temp_event=PrivateEvent(data["eventId"],"select")
+
+        eventbrief=temp_event.get(["event_brief"])[0]
+
         
         temp_event.getFromEUDB()
         participants=temp_event.get(["participants"])[0]
@@ -107,6 +110,7 @@ def load_event_page(request):
         # 参与者列表：包括用户id和名称
     
         result={
+            "eventbrief":eventbrief,
             "participants":participants,
             "eventdetail":eventdetail,
             "costRemarks":costremarks,
@@ -127,6 +131,7 @@ def update_event_detail(request):
             temp_event=PrivateEvent(data["eventId"],"update")
             temp_event.set(data["eventDetail"])
             temp_event.set({"event_type":data["eventType"]})
+            temp_event.set({"event_ready":data["eventReady"]})
             return JsonResponse({"code":1, "updateDetailOk":True})
         else:
             return JsonResponse({"code":1, "updateDetailOk":False,"msg":"only creator can update event"})
@@ -219,8 +224,13 @@ def examine_event(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
         su=SuperUser(request.userid,"classattrs")
-        su.examineEvent(data["eventId"])
-        return JsonResponse({"code":1, "examineOk":True})
+        if data["passed"]==True:
+            su.examineEvent(data["eventId"])
+            return JsonResponse({"code":1, "examineOk":True})
+        else:
+            su.denyEvent(data["eventId"],data["reason"])
+            return JsonResponse({"code":1, "examineOk":False})
+
     except Exception as e:
         return JsonResponse({"code":0,"msg":"examineEventError:"+str(e)})        
 def add_event_group(request):
@@ -238,11 +248,11 @@ def add_event_group(request):
 def join_group(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
-        if utils.checkEventCreator(data["groupEventId"])!=request.userid:
+        if utils.checkEventCreator(data["groupEventId"])==request.userid:
             Group.joinGroup(data["groupId"],data["groupEventId"],data["groupUserId"])
             return JsonResponse({"code":1, "joinGroupOk":True})
         else:
-            return JsonResponse({"code":1, "joinGroupOk":False})
+            return JsonResponse({"code":1, "joinGroupOk":False,"msg":"creator can't join group"})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"joinGroupError:"+str(e)}) 
     
@@ -282,10 +292,7 @@ def testtest(request):
         }
         global All_conn_dict
         if request.userid in All_conn_dict:
-            print("here!")
-            #All_conn_dict[request.userid].send_notification(temp_dict)
             async_to_sync(All_conn_dict[request.userid].send_notification)(temp_dict)
-        print(All_conn_dict)
             #utils.notify_user(request.userid,temp_dict)
 
         return JsonResponse({"code":1, "testtestOk":True})
@@ -327,4 +334,23 @@ def update_resource(request):
             return JsonResponse({"code":1, "updateResourceOk":False,"msg":"only event's creator can update resource"})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"updateResourceError:"+str(e)}) 
+    
+def add_comment(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        time=datetime.fromtimestamp(float(data["time"]))
+        Comment(request.userid,data["content"],data["eventId"],time)
+
+        return JsonResponse({"code":1, "addCommentOk":True})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"addCommentError:"+str(e)}) 
+    
+def get_comments(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        result=Comment.getComments(data["eventId"])
+
+        return JsonResponse({"code":1, "data":result})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"getCommentsError:"+str(e)})    
     

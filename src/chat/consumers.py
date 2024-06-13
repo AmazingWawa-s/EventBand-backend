@@ -1,12 +1,14 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth import get_user_model
-from event_band.utils import All_conn_dict,SECRET_KEY
+from event_band.utils import SECRET_KEY
+from event_band.global_vars import All_conn_dict
 import jwt
 from entity.db import ChatMessageDB
 from entity.message import ChatMessage
 from chat.views import send_to_group
 import time
+from datetime import datetime
 
 User = get_user_model()
 
@@ -50,8 +52,9 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
     async def send_notification(self, dic):
         dic["backend_send_time"]=time.asctime()
-        print(f'Sending notification: {dic}')
         await self.send(text_data=json.dumps(dic))
+        print(f'\n\n\nSending notification to id={self.id}: {dic}\n\n\n')
+        
 
 
 
@@ -92,7 +95,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.id=decode_token["userId"]
         All_conn_dict[self.id]=self
 
-        chat=ChatMessage(self.id,data["content"],data["chatType"],data["time"])
+        time=datetime.fromtimestamp(float(data["time"]))
+        chat=ChatMessage(self.id,data["content"],data["chatType"],time)
         if data["chatType"]==0:
             # 群聊
             chat.set({"chr_event_id":data["eventId"]})
@@ -103,8 +107,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             if data["receiverId"] in All_conn_dict:
                 await All_conn_dict[data["receiverId"]].send_notification(data)
 
+    # async def handle_example_message(self, data):
+    #     print(f'Received message: {data}')
+
+    #     global All_conn_dict
+
+    #     temp_dict={"data":data}
+    #     await self.send_notification(temp_dict)
+
 
     async def send_notification(self, dic):
         dic["backend_send_time"]=time.asctime()
-        print(f'Sending notification to id={self.id}: {dic}')
+        print(f'Sending chat to id={self.id}: {dic}')
         await self.send(text_data=json.dumps(dic))

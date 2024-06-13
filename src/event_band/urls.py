@@ -4,6 +4,7 @@ from user import views as uv
 from event import views as ev
 from django.conf import settings
 from django.conf.urls.static import static
+from chat import views as cv
 
 urlpatterns = [
     #user
@@ -42,6 +43,21 @@ urlpatterns = [
     # group
     path("group/add/",ev.add_event_group),
     path("group/join/",ev.join_group),
+
+    # resource
+    path("resource/add/",ev.add_resource),
+    path("resource/delete/",ev.delete_resource),
+    path("resource/update/",ev.update_resource),
+
+    # comment
+    path("comment/add/",ev.add_comment),
+    path("comment/get/",ev.get_comments),
+
+
+    # chat record
+    path("chatrecord/event/",cv.get_group_messages),
+    path("chatrecord/private/",cv.get_private_messages),
+
 
     path("test/",ev.testtest)
 ]

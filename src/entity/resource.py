@@ -8,7 +8,7 @@ class Resource():
         if self.id==-1 and self.state=="create":
             pass
         elif self.state=="update" and self.id>=0:
-            self.getFromDB("*")
+            pass
         elif self.state=="select" and self.id>=0:
             self.getFromDB("*")
         elif self.state=="delete" and self.id>=0:
@@ -19,7 +19,7 @@ class Resource():
         if self.state=="create":
             self.insertGroup()
         elif self.state=="update" and self.id>=0:
-            pass
+            self.updateResource()
         elif self.state=="select":
             pass
         elif self.state=="delete":

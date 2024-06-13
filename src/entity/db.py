@@ -62,7 +62,7 @@ class EventDB(DB):
     def selectPublicEvents(self):
         self.cursor.execute("select eb.*,lo.location_firstname,lo.location_name from event_brief eb left join location lo on eb.event_location_id=lo.location_id where eb.event_type=1")
     def selectById(self,attrs,id):
-        self.cursor.execute("select "+ attrs +" from event_brief where event_id ="+str(id))
+        self.cursor.execute("select eb."+ attrs +",u.user_name as event_creator_name from event_brief eb left join user u on eb.event_creator_id=u.user_id where event_id ="+str(id))
     def selectByIdsJoinLocation(self,ids):
         self.cursor.execute("select eb.*,lo.location_firstname,lo.location_name from event_brief eb left join location lo on eb.event_location_id=lo.location_id where event_id in (" + ids + ")")
     def selectByIds(self,attrs,ids):
@@ -204,9 +204,18 @@ class ChatMessageDB(DB):
     def selectPrivateMessagesByUids(self,attrs,my_id,your_id):
         self.cursor.execute("select "+attrs+" from chatrecord where chr_type=1 \
                             and ( \
-                            (chr_sender_id="+str(my_id)+"and chr_recv_id="+str(your_id)+") \
-                            or (chr_sender_id="+str(your_id)+"and chr_recv_id="+str(my_id)+") \
+                            (chr_sender_id="+str(my_id)+" and chr_recv_id="+str(your_id)+") \
+                            or (chr_sender_id="+str(your_id)+" and chr_recv_id="+str(my_id)+") \
                             ) order by chr_time" )
+    
+class CommentDB(DB):
+    def __init__(self):
+        super().__init__()
+    def insertCommentDB(self,toinsert):
+        self.cursor.execute("insert into comment " + toinsert)
+        self.conn.commit()
+    def selectCommentByEventId(self,attrs,eid):
+        self.cursor.execute("select "+attrs+" from comment where comment_event_id="+str(eid)+" order by comment_time")
     
 class CostremarkDB(DB):
     def __init__(self):

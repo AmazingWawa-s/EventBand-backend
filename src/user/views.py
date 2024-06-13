@@ -52,7 +52,7 @@ def login(request):
                 "my_exp":int(time.time())+EXPIRE_TIME
             }
             Token=utils.Generate_token(payload)
-            a=Message(payload["userId"],"成功登录","a","b","c")
+            a=Message(payload["userId"],"成功登录","","","")
             #tUser.updateToDB()
             return JsonResponse({"code":1,"userNameExist":True,"userPasswordOk":True,"userToken":Token})
         # 密码错误

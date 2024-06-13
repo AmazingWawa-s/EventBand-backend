@@ -1,6 +1,7 @@
 import json
 from entity.event import PrivateEvent,PublicEvent,Event
 from entity.location import Location
+from entity.message import Message
 from django.db import connection
 import event_band.utils as utils
 import datetime
@@ -292,7 +293,9 @@ class SuperUser(User):
                         "event_location_id":result["examine_event_location_id"],
                         "event_description":result["examine_event_description"],
                         "event_type":result["examine_event_type"],
-                        "event_creator_id":result["examine_event_creator_id"]})
+                        "event_creator_id":result["examine_event_creator_id"],
+                        "event_ready":0
+                        })
         dbop.insertEU(eid,result["examine_event_creator_id"],"creator")
         dbop.insertEL(eid,result["examine_event_location_id"],result["examine_event_start_date"],result["examine_event_end_date"],result["examine_event_start_time"],result["examine_event_end_time"])
         dbop.insertEventDetail(eid)
@@ -311,6 +314,15 @@ class SuperUser(User):
         new_location.set(location_dict)
         new_location.set({"location_id":utils.Return_current_location_id(1)})
         return True
+    
+    def denyEvent(self,eid,reason):
+        dbop=EventDB()
+        dbop.selectExamineEventById(eid)
+        result=dbop.get()[0]
+        Message(result["examine_creator_id"],"活动被驳回！","error","",reason)
+
+        dbop.deleteExamineEventById(eid)
+        
         
 #超级用户删除场地----------------------------------------------------------
     def deleteLocation(self,location_id):

@@ -15,9 +15,10 @@ class Event():
         # self.description=""
         # self.participants:list = []#参与到这个活动的人
         self.type=0 # 默认私有
-        self.available=["id","creator_id","name","start_time","end_time","start_date","end_date","location_id","description","type"]#允许与数据库交互的属性
+        self.available=["id","creator_id","name","start_time","end_time","start_date","end_date","location_id","description","type","ready"]#允许与数据库交互的属性
         self.detail_available=["person_now","budget","cost","signup_time","person_max"]
         if self.id>=0 and self.state=="select":
+            self.event_brief={}
             self.getFromDB("*")
             self.participants:list = []
             self.par_id:list=[]
@@ -64,9 +65,11 @@ class Event():
     def getFromDB(self,attrs:str):
         dbop=EventDB()
         dbop.selectById(attrs,self.id)
-        result=dbop.get()       
+        result=dbop.get()    
         if len(result)==1:
             self.set(result[0])
+            if self.state=="select":
+                self.event_brief=result[0]
         elif len(result)==0:
             raise ValueError("EventId Not Exist")
         else :raise ValueError("Event getFromDB Error")
@@ -92,7 +95,7 @@ class Event():
             self.set(result[0])
         elif len(result)==0:
             raise ValueError("EventId Not Exist")
-        else :raise ValueError("Event getFromDB Error")
+        else :raise ValueError("Event getFromEventDetail Error")
 #获取此活动的分组信息-------------------------------------------------------  
     def getEventGroups(self):
         dbop=GroupDB()
@@ -147,7 +150,7 @@ class Event():
 
     def joinEvent(self,event_id,user_id):
 
-        if self.person_now>=self.person_max:
+        if self.person_now>=self.person_max and self.person_max!=-1:
             return 2
 
         dbop=EventDB()
