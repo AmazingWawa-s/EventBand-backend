@@ -293,7 +293,6 @@ def examine_cost_remark(request):
             Message(user_id[0]["cr_user_id"],"预算报销成功！","link","/eventDetail?id="+str(event_id[0]["cr_event_id"]),data["remark"])
         else:
             Message(user_id[0]["cr_user_id"],"预算报销被驳回！","link","/eventDetail?id="+str(event_id[0]["cr_event_id"]),data["remark"])
-        print(66)
         #temp_event=PrivateEvent(data["eventId"],"join")
         return JsonResponse({"code":1, "examineOk":True})
     except Exception as e:

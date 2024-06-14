@@ -41,13 +41,25 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
         await self.handle_message(data)
 
-    async def handle_message(self, data):
+    async def handle_example_message(self, data):
         print(f'Received message: {data}')
 
         global All_conn_dict
         decode_token=jwt.decode(data["userToken"],SECRET_KEY,algorithms="HS256")
         self.id=decode_token["userId"]
         All_conn_dict[self.id]=self
+
+        time=datetime.fromtimestamp(float(data["time"]))
+        chat=ChatMessage(self.id,data["content"],data["chatType"],time)
+        if data["chatType"]==0:
+            # 群聊
+            chat.set({"chr_event_id":data["eventId"]})
+            await send_to_group(data,data["eventId"])
+        else:
+            # 私聊
+            chat.set({"chr_recv_id":data["receiverId"]})
+            if data["receiverId"] in All_conn_dict:
+                await All_conn_dict[data["receiverId"]].send_notification(data)
 
 
     async def send_notification(self, dic):

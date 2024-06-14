@@ -79,6 +79,8 @@ class EventDB(DB):
         self.cursor.execute("select distinct "+ attrs +" from eurelation where eurelation_user_id ="+str(id))
     def selectEU(self,eid,uid):
         self.cursor.execute("select distinct * from eurelation where eurelation_event_id="+str(eid)+" and eurelation_user_id="+str(uid))
+    def selectEidFromEUByUid(self,uid):
+        self.cursor.execute("select distinct eurelation_event_id from eurelation where eurelation_user_id="+str(uid))
     
     def insertEU(self,event_id,user_id,role):
         self.cursor.execute("insert into eurelation (eurelation_event_id,eurelation_user_id,eurelation_role) values(%s,%s,%s)",[event_id,user_id,role])
@@ -206,7 +208,7 @@ class ChatMessageDB(DB):
                             (chr_sender_id="+str(my_id)+" and chr_recv_id="+str(your_id)+") \
                             or (chr_sender_id="+str(your_id)+" and chr_recv_id="+str(my_id)+") \
                             ) order by chr_time" )
-    def selectAllMessages(self,uid):
+    def selectAllMessages(self,uid,eids):
         sql_old = """
             SELECT
                 IF(chr_type = 0, chr_event_id, chr_recv_id) AS title,
@@ -226,7 +228,9 @@ class ChatMessageDB(DB):
                 c.chr_type,
                 c.chr_time,
                 u.user_name AS chr_sender_name,
+                c.chr_sender_id,
                 c.chr_content,
+                IF(c.chr_type = 0, c.chr_event_id, c.chr_recv_id) AS title_id,
                 IF(c.chr_type = 0, e.event_name, u2.user_name) AS title
             FROM
                 chatrecord c
@@ -237,7 +241,10 @@ class ChatMessageDB(DB):
             LEFT JOIN
                 user u2 ON c.chr_recv_id = u2.user_id
             WHERE
-                c.chr_sender_id = %s OR (c.chr_type = 1 AND c.chr_recv_id = %s)
+                c.chr_sender_id = %s OR (c.chr_type = 1 AND c.chr_recv_id = %s) OR (c.chr_type = 0 AND c.chr_event_id in (""" \
+            + eids \
+            +"""
+                    ))
             ORDER BY
                 c.chr_type, title, c.chr_time;
         """

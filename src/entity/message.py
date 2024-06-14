@@ -1,4 +1,4 @@
-from entity.db import MessageDB,ChatMessageDB
+from entity.db import MessageDB,ChatMessageDB,EventDB
 import datetime
 from asgiref.sync import async_to_sync
 from event_band.global_vars import All_conn_dict
@@ -97,8 +97,17 @@ class ChatMessage(Message):
 
     @staticmethod
     def getAllMessages(uid):
+        dbop=EventDB()
+        dbop.selectEidFromEUByUid(uid)
+        result=dbop.get()
+
+        eidlist=[]
+        if len(result)>0:
+            eidlist=[str(result[i]["eurelation_event_id"]) for i in range(len(result))]
+        eids = ",".join(eidlist)
+
         dbop=ChatMessageDB()
-        dbop.selectAllMessages(uid)
+        dbop.selectAllMessages(uid,eids)
         result=dbop.get()
 
 
@@ -109,12 +118,14 @@ class ChatMessage(Message):
             chat_entry = {
                 'chr_time': row['chr_time'],
                 'chr_sender': row['chr_sender_name'],
+                'chr_sender_id': row['chr_sender_id'],
                 'chr_content': row['chr_content']
             }
 
             if title not in grouped_chats:
                 grouped_chats[title] = {
                     'title': title,
+                    'title_id': row['title_id'],
                     'chr_type': chr_type,
                     'chatlist': []
                 }
