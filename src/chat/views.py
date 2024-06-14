@@ -6,20 +6,22 @@ from entity.user import User
 from django.http import JsonResponse
 import json
 
-async def send_to_group(data:dict,eid):
+async def send_to_group(data:dict,eid,sender_id):
     temp_event=PrivateEvent(eid,"select")
-    participants:list[dict] = temp_event.get(["participants"])[0]
+    temp_event.getFromEUDB()
+    participants:list = temp_event.get(["par_id"])[0]
     creator_id=temp_event.get(["creator_id"])[0]
-
+    print(creator_id,participants)
     global All_conn_dict
+    print(All_conn_dict)
     # 发给活动创建者
     if creator_id in All_conn_dict:
-        await All_conn_dict[creator_id].send_notification(data)
+        await All_conn_dict[creator_id].send_notification(data,sender_id)
     # 发给参与者
     for participant in participants:
         print("###### Group sent start! ######")
-        if participant["eurelation_user_id"] in All_conn_dict:
-            await All_conn_dict[participant["eurelation_user_id"]].send_notification(data)
+        if participant in All_conn_dict:
+            await All_conn_dict[participant].send_notification(data,sender_id)
         print("###### Group sent end! ######")
     
 

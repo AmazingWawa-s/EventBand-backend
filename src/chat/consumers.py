@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from event_band.utils import SECRET_KEY
 from event_band.global_vars import All_conn_dict
 import jwt
-from entity.db import ChatMessageDB
+from entity.db import ChatMessageDB,UserDB
 from entity.message import ChatMessage
 from chat.views import send_to_group
 import time
@@ -38,31 +38,37 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-
-        await self.handle_message(data)
+        print(data)
+        await self.handle_example_message(data)
 
     async def handle_example_message(self, data):
         print(f'Received message: {data}')
 
-        global All_conn_dict
-        decode_token=jwt.decode(data["userToken"],SECRET_KEY,algorithms="HS256")
-        self.id=decode_token["userId"]
-        All_conn_dict[self.id]=self
-
-        time=datetime.fromtimestamp(float(data["time"]))
-        chat=ChatMessage(self.id,data["content"],data["chatType"],time)
-        if data["chatType"]==0:
-            # 群聊
-            chat.set({"chr_event_id":data["eventId"]})
-            await send_to_group(data,data["eventId"])
+        if data["eventId"]==-1 and data["receiverId"]==-1:
+            global All_conn_dict
+            decode_token=jwt.decode(data["userToken"],SECRET_KEY,algorithms="HS256")
+            self.id=decode_token["userId"]
+            All_conn_dict[self.id]=self
+            
         else:
-            # 私聊
-            chat.set({"chr_recv_id":data["receiverId"]})
-            if data["receiverId"] in All_conn_dict:
-                await All_conn_dict[data["receiverId"]].send_notification(data)
+            time=datetime.fromtimestamp(float(data["timestamp"])/1000)
+            chat=ChatMessage(self.id,data["content"],data["chatType"],time)
+            if data["chatType"]==0:
+                # 群聊
+                chat.set({"chr_event_id":data["eventId"]})
+                await send_to_group(data,data["eventId"],self.id)
+            else:
+                # 私聊
+                chat.set({"chr_recv_id":data["receiverId"]})
+                if data["receiverId"] in All_conn_dict:
+                    await All_conn_dict[data["receiverId"]].send_notification(data,self.id)
 
 
-    async def send_notification(self, dic):
+    async def send_notification(self, dic,sender_id):
+        if sender_id is not None:
+            dbop=UserDB()
+            dbop.selectById("user_name",sender_id)
+            dic["sender_name"]=dbop.get()[0]["user_name"]
         result_dic={
             "type":"notification",
             "data":dic,
@@ -111,7 +117,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.id=decode_token["userId"]
         All_conn_dict[self.id]=self
 
-        time=datetime.fromtimestamp(float(data["time"]))
+        time=datetime.fromtimestamp(float(data["timestamp"]))
         chat=ChatMessage(self.id,data["content"],data["chatType"],time)
         if data["chatType"]==0:
             # 群聊

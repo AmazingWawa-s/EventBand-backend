@@ -6,7 +6,7 @@ from django.db import connection
 import event_band.utils as utils
 import datetime
 
-from entity.db import UserDB,EventDB,LocationDB
+from entity.db import UserDB,EventDB,LocationDB,ChatMessageDB,CostremarkDB,CommentDB
 class User():
 #初始化函数---------------------------------
     def __init__(self,nid,state):
@@ -192,12 +192,19 @@ class User():
     
     def deleteEvent(self,event_id):
         dbop=EventDB()
+        cmdbop=ChatMessageDB()
+        crdbop=CostremarkDB()
+        cdbop=CommentDB()
         if event_id not in self.created_event_id:
             raise ValueError("Only creator can delete event")
         
         dbop.deleteELByEventId(event_id)
         dbop.deleteEUByEventId(event_id)
+        cmdbop.deleteMessageByEid(event_id)
+        crdbop.deleteRemarkByEid(event_id)
+        #cdbop.delete
         dbop.deleteEventById(event_id)
+        
 
     
     @staticmethod
@@ -304,7 +311,7 @@ class SuperUser(User):
         dbop.insertEU(eid,result["examine_event_creator_id"],"creator")
         dbop.insertEL(eid,result["examine_event_location_id"],result["examine_event_start_date"],result["examine_event_end_date"],result["examine_event_start_time"],result["examine_event_end_time"])
         dbop.insertEventDetail(eid)
-        Message(result["examine_event_creator_id"],'活动 '+{result["examine_event_name"]}+' 已通过',"link","/eventDetail?id="+str(eid),"event_id:"+str(eid)+" passed by "+self.name)
+        Message(result["examine_event_creator_id"],'活动 '+result["examine_event_name"]+' 已通过',"link","/eventDetail?id="+str(eid),"event_id:"+str(eid)+" passed by "+self.name)
     
     def getAllEvents(self):
         dbop=EventDB()

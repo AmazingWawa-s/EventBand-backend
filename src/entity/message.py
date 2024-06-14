@@ -22,7 +22,7 @@ class Message():
         
         global All_conn_dict
         if self.user_id in All_conn_dict:
-            async_to_sync(All_conn_dict[self.user_id].send_notification)(temp_dict)
+            async_to_sync(All_conn_dict[self.user_id].send_notification)(temp_dict,None)
 
     def insertMessage(self):
         dbop=MessageDB()

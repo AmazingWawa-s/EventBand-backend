@@ -266,7 +266,6 @@ def add_cost_remark(request):
         temp_event.getFromEUDB()
         if request.userid not in temp_event.get(["par_id"])[0]:
             return JsonResponse({"code":1, "addCostRemarkOk":False,"msg":"Only participants can add cost remark"})
-        
         remark=Costremark(-1,"create")
         temp_dict={
             "cr_event_id":data["eventId"],
@@ -276,7 +275,7 @@ def add_cost_remark(request):
         }
         remark.set(temp_dict)
         creator_id=utils.checkEventCreator(data["eventId"])
-        Message(creator_id,"新的预算报销申请！","link","/eventDetail?id="+data["eventId"],"")
+        Message(creator_id,"新的预算报销申请！","link","/eventDetail?id="+str(data["eventId"]),"")
         return JsonResponse({"code":1, "addCostRemarkOk":True})
     except Exception as e:
         return JsonResponse({"code":0,"msg":"addCostRemarkError:"+str(e)}) 

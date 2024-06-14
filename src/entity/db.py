@@ -2,7 +2,7 @@ import pymysql
 
 class DB():
     def __init__(self):
-        self.conn=pymysql.connect(host="192.168.137.128",user="sa",password="",db="eventband",port=3306,charset="utf8")
+        self.conn=pymysql.connect(host="192.168.137.25",user="sa",password="",db="eventband",port=3306,charset="utf8")
         self.cursor=self.conn.cursor(cursor=pymysql.cursors.DictCursor)
         #self.conn=connection.connect(host="192.168.43.246",user="sa",password="",db="eventband",port=3306,charset="utf8")
         #self.cursor=connection.cursor()
@@ -200,6 +200,9 @@ class ChatMessageDB(DB):
     def insertMessageDB(self,toinsert):
         self.cursor.execute("insert into chatrecord " + toinsert)
         self.conn.commit()
+    def deleteMessageByEid(self,eid):
+        self.cursor.execute("delete from chatrecord where chr_event_id=%s",eid)
+        self.conn.commit()   
     def selectGroupMessagesByEId(self,attrs,eid):
         self.cursor.execute("select "+attrs+" from chatrecord where chr_type=0 and chr_event_id="+str(eid))
     def selectPrivateMessagesByUids(self,attrs,my_id,your_id):
@@ -272,7 +275,9 @@ class CostremarkDB(DB):
         self.conn.commit()
     def selectRemarksById(self,attrs,id):
         self.cursor.execute("select "+attrs+" from cost_remark where cr_id="+str(id))
-
+    def deleteRemarkByEid(self,eid):
+        self.cursor.execute("delete from chatrecord where chr_event_id=%s",eid)
+        self.conn.commit()   
 
 class ResourceDB(DB):
     def __init__(self):
