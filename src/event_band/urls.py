@@ -38,7 +38,8 @@ urlpatterns = [
     path("publicevents/",ev.select_public_events),
     path("getexamineevents/",ev.get_examine_events),
     path("examine/",ev.examine_event),
-    
+    path("subevent/add/",ev.add_subevent),
+    path("subevent/get/",ev.get_subevents),    
     
     # group
     path("group/add/",ev.add_event_group),

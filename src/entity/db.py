@@ -2,7 +2,7 @@ import pymysql
 
 class DB():
     def __init__(self):
-        self.conn=pymysql.connect(host="192.168.137.75",user="sa",password="",db="eventband",port=3306,charset="utf8")
+        self.conn=pymysql.connect(host="192.168.137.128",user="sa",password="",db="eventband",port=3306,charset="utf8")
         self.cursor=self.conn.cursor(cursor=pymysql.cursors.DictCursor)
         #self.conn=connection.connect(host="192.168.43.246",user="sa",password="",db="eventband",port=3306,charset="utf8")
         #self.cursor=connection.cursor()
@@ -207,7 +207,7 @@ class ChatMessageDB(DB):
                             or (chr_sender_id="+str(your_id)+" and chr_recv_id="+str(my_id)+") \
                             ) order by chr_time" )
     def selectAllMessages(self,uid):
-        sql = """
+        sql_old = """
             SELECT
                 IF(chr_type = 0, chr_event_id, chr_recv_id) AS title,
                 chr_type,
@@ -220,6 +220,26 @@ class ChatMessageDB(DB):
                 chr_sender_id = %s OR (chr_type = 1 AND chr_recv_id = %s)
             ORDER BY
                 chr_type, title, chr_time;
+        """
+        sql="""
+            SELECT
+                c.chr_type,
+                c.chr_time,
+                u.user_name AS chr_sender_name,
+                c.chr_content,
+                IF(c.chr_type = 0, e.event_name, u2.user_name) AS title
+            FROM
+                chatrecord c
+            LEFT JOIN
+                event_brief e ON c.chr_event_id = e.event_id
+            LEFT JOIN
+                user u ON c.chr_sender_id = u.user_id
+            LEFT JOIN
+                user u2 ON c.chr_recv_id = u2.user_id
+            WHERE
+                c.chr_sender_id = %s OR (c.chr_type = 1 AND c.chr_recv_id = %s)
+            ORDER BY
+                c.chr_type, title, c.chr_time;
         """
         self.cursor.execute(sql, [uid, uid])   
          
@@ -265,3 +285,12 @@ class ResourceDB(DB):
         self.conn.commit()
     def selectEventResources(self,eid):
         self.cursor.execute("select * from resource where resource_eid="+str(eid))
+
+class SubeventDB(DB):
+    def __init__(self):
+        super().__init__()      
+    def insertSubevent(self,toinsert):
+        self.cursor.execute("insert into event_sub " + toinsert)
+        self.conn.commit()
+    def selectSubeventByEid(self,attrs,eid):
+        self.cursor.execute("select "+attrs+" from event_sub where event_sub_eid="+str(eid))

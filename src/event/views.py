@@ -108,10 +108,13 @@ def load_event_page(request):
         
         costremarks=Costremark.getAllRemarks(data["eventId"])
 
+        subevents=Subevent.getSubevent(data["eventId"])
+
         # 参与者列表：包括用户id和名称
     
         result={
             "eventbrief":eventbrief,
+            "subevents":subevents,
             "participants":participants,
             "eventdetail":eventdetail,
             "costRemarks":costremarks,
@@ -371,9 +374,18 @@ def get_comments(request):
 def add_subevent(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
-        Subevent(data["eventId"],data["date"],data["time"])
+        Subevent(data["eventId"],data["time"],data["title"],data["content"],data["participants"])
+
+        return JsonResponse({"code":1, "addOk":True})
+    except Exception as e:
+        return JsonResponse({"code":0,"msg":"addSubeventError:"+str(e)})
+
+def get_subevents(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        result=Subevent.getSubevent(data["eventId"])
 
         return JsonResponse({"code":1, "data":result})
     except Exception as e:
-        return JsonResponse({"code":0,"msg":"getCommentsError:"+str(e)})       
+        return JsonResponse({"code":0,"msg":"getSubeventError:"+str(e)})    
     

@@ -107,7 +107,7 @@ DATABASES = {
         "NAME": "eventband",
         "USER": 'sa',
         "PASSWORD": '',
-        "HOST":'192.168.137.75',
+        "HOST":'192.168.137.128',
         "PORT": '3306'
     }
 }

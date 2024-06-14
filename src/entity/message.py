@@ -108,7 +108,7 @@ class ChatMessage(Message):
             chr_type = row['chr_type']
             chat_entry = {
                 'chr_time': row['chr_time'],
-                'chr_sender_id': row['chr_sender_id'],
+                'chr_sender': row['chr_sender_name'],
                 'chr_content': row['chr_content']
             }
 
